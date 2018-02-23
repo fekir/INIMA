@@ -1,0 +1,12 @@
+= INIMA
+
+INIMA stands for INIt MAchine (it also apparently means https://ro.wikipedia.org/wiki/Inim%C4%83[heart] in Romanian).
+It is a collection of scripts, notes and references on how to configure operating systems (primary modern windows and debian-based systems).
+
+Setting up a computer or virtual machine always takes a lot of effort and time, it's easy to forget to configure something, and after a couple of weeks noone knows how the machine has be configured.
+
+On most Linux systems it is easy to automate most of the stuff, so I've begun to collect various command used for setting my environments up.
+
+In the last years, tools like docker and packer emerged, providing the ability to ease the creation of virtual environments.
+
+I decided therefore to resurrect, polish and update some of my old scripts and notes.
