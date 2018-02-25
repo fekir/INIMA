@@ -1,0 +1,3 @@
+{
+	"packages": "neovim,qtcreator,cmake,cmake-gui,cmake-curses-gui,cppcheck,cppcheck-gui,clang,clang-tidy,clang-format,lldb,g++,gdb,valgrind,ninja-build,doxygen,catch,strace"
+}
