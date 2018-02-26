@@ -1,0 +1,69 @@
+{
+	"builders": [
+		{
+			"type": "virtualbox-ovf",
+			"vm_name": "{{ user `vm_name` }}",
+			"output_directory": "out/virtualbox/{{user `vm_name`}}_setup",
+			"boot_wait": "2m",
+			"guest_additions_mode": "attach",
+			"virtualbox_version_file": "",
+			"headless": "{{user `headless`}}",
+			"source_path": "{{user `source_path`}}",
+			"shutdown_command": "shutdown /s /t 10 /f /d p:4:1 /c \"Packer Shutdown\"",
+			"shutdown_timeout": "1h",
+			"communicator": "winrm",
+			"winrm_password": "{{user `password`}}",
+			"winrm_username": "{{user `username`}}",
+			"winrm_timeout": "12h",
+			"vboxmanage": [
+				[ "modifyvm", "{{.Name}}", "--memory", "{{user `memory`}}" ],
+				[ "modifyvm", "{{.Name}}", "--cpus", "{{user `cpus`}}" ],
+				[ "modifyvm", "{{.Name}}", "--vram", "{{ user `vram` }}" ],
+				[ "modifyvm", "{{.Name}}", "--clipboard", "bidirectional" ],
+				[ "modifyvm", "{{.Name}}", "--draganddrop", "bidirectional" ],
+				[ "modifyvm", "{{.Name}}", "--usb", "on" ],
+				[ "modifyvm", "{{.Name}}", "--audio" ,"none"]
+			]
+		}
+	],
+	"provisioners": [
+		{
+			"type": "file",
+			"source": "script/setup_windows_functions.ps1",
+			"destination": "C:/Windows/Temp/setup_windows_functions.ps1"
+		},
+		{
+			"type": "powershell",
+			"elevated_user": "{{user `username`}}",
+			"elevated_password": "{{user `password`}}",
+			"pause_before": "10s",
+			"environment_vars": [
+				"SETUP_VMACHINE={{user `vmachine`}}",
+				"SETUP_KEYMAP={{user `keymap`}}",
+				"SETUP_CHOCO_PACKAGES={{user `choco_packages`}}",
+				"SETUP_CYGWIN_PACKAGES={{user `cygwin_packages`}}",
+				"SETUP_CLEAN={{user `cleanup`}}"
+			],
+			"scripts": [
+				"./script/setup_windows.ps1"
+			]
+		}
+	],
+	"variables": {
+		"cpus": "2",
+		"memory": "2048",
+		"vram": "32",
+		"headless": "true",
+		"source_path": "out/virtualbox/windows_base/windows.ovf",
+		"password": "vagrant",
+		"username": "vagrant",
+		"version": "0.1.0",
+		"vm_name": "windows",
+		"locale": "en_US",
+		"keymap": "en-US",
+		"vmachine": "true",
+		"choco_packages": "7zip,irfanview,nano,notepadplusplus,sysinternals,sumatrapdf.install",
+		"cygwin_packages": "chere,zsh,wget,nano,tmux,mc,bash-completion,tree",
+		"cleanup": "no_universal_apps"
+	}
+}

@@ -1,0 +1,88 @@
+{
+	"builders": [
+		{
+			"type": "virtualbox-iso",
+			"vm_name": "{{ user `vm_name` }}",
+			"guest_os_type": "{{user `guest_os_type`}}",
+			"disk_size": "{{user `disk_size`}}",
+			"output_directory": "out/virtualbox/{{user `vm_name`}}_base",
+			"boot_wait": "2m",
+			"guest_additions_mode": "attach",
+			"virtualbox_version_file": "",
+			"headless": "{{user `headless`}}",
+			"iso_checksum": "{{user `iso_checksum`}}",
+			"iso_checksum_type": "{{user `iso_checksum_type`}}",
+			"iso_urls": [
+				"{{user `iso_url`}}"
+			],
+			"floppy_files": [
+				"{{user `preseed`}}",
+				"./bootstrap/winrm.ps1",
+				"./script/setup_windows.ps1",
+				"./script/setup_windows_functions.ps1"
+			],
+			"shutdown_command": "shutdown /s /t 10 /f /d p:4:1 /c \"Packer Shutdown\"",
+			"shutdown_timeout": "1h",
+			"communicator": "winrm",
+			"winrm_password": "{{user `password`}}",
+			"winrm_username": "{{user `username`}}",
+			"winrm_timeout": "12h",
+			"vboxmanage": [
+				[ "modifyvm", "{{.Name}}", "--memory", "{{user `memory`}}" ],
+				[ "modifyvm", "{{.Name}}", "--cpus", "{{user `cpus`}}" ],
+				[ "modifyvm", "{{.Name}}", "--vram", "{{ user `vram` }}" ],
+				[ "modifyvm", "{{.Name}}", "--clipboard", "bidirectional" ],
+				[ "modifyvm", "{{.Name}}", "--draganddrop", "bidirectional" ],
+				[ "modifyvm", "{{.Name}}", "--usb", "on" ],
+				[ "modifyvm", "{{.Name}}", "--audio" ,"none"]
+			]
+		}
+	],
+	"provisioners": [
+		{
+			"type": "file",
+			"source": "script/setup_windows_functions.ps1",
+			"destination": "C:/Windows/Temp/setup_windows_functions.ps1"
+		},
+		{
+			"type": "powershell",
+			"elevated_user": "{{user `username`}}",
+			"elevated_password": "{{user `password`}}",
+			"pause_before": "10s",
+			"environment_vars": [
+				"SETUP_VMACHINE={{user `vmachine`}}",
+				"SETUP_KEYMAP={{user `keymap`}}",
+				"SETUP_CHOCO_PACKAGES={{user `choco_packages`}}",
+				"SETUP_CYGWIN_PACKAGES={{user `cygwin_packages`}}",
+				"SETUP_CLEAN={{user `cleanup`}}"
+			],
+			"scripts": [
+				"./script/setup_windows.ps1"
+			]
+		}
+	],
+	"variables": {
+		"cpus": "2",
+		"disk_size": "65536",
+		"memory": "2048",
+		"vram": "32",
+		"headless": "true",
+		"iso_checksum": "ea214ee684a5bb8230707104c54a3b74d92f1d69",
+		"iso_checksum_type": "sha1",
+		"iso_name": "en_windows_10_multi-edition_version_1709_updated_dec_2017_x64_dvd_100406711.iso",
+		"iso_path": "./iso",
+		"iso_url": "./iso/en_windows_10_multi-edition_version_1709_updated_dec_2017_x64_dvd_100406711.iso",
+		"preseed": "./bootstrap/Autounattend.xml",
+		"password": "vagrant",
+		"username": "vagrant",
+		"version": "0.1.0",
+		"vm_name": "windows",
+		"guest_os_type": "Windows10_64",
+		"locale": "en_US",
+		"keymap": "en-US",
+		"vmachine": "",
+		"choco_packages": "",
+		"cygwin_packages": "",
+		"cleanup": ""
+	}
+}
