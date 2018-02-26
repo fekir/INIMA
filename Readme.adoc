@@ -10,3 +10,79 @@ On most Linux systems it is easy to automate most of the stuff, so I've begun to
 In the last years, tools like docker and packer emerged, providing the ability to ease the creation of virtual environments.
 
 I decided therefore to resurrect, polish and update some of my old scripts and notes.
+
+== Project structure
+
+=== bootstrap folder
+For unattended installs, can be used by packer or other tools.
+
+=== template folder
+Templates are used by packer, together with the bootstrap directory it should be possible to create automatically a virtual machine.
+
+=== script folder
+Collections of functions for setting an environment.
+They can be used with packer, docker, vagrant, on a virtual environment or real machine.
+
+The scripts should also work well for a new machine, as for an already provisioned one.
+Most functions expect to be running with admin rights.
+
+Functionalities are splitted in functions, in order to be able able to invoke them from the command line too.
+
+== Sample: Create and import Virtualbox Machine
+
+----
+packer build template/virtualbox/debian-base.json
+packer build template/virtualbox/debian-mate.json
+vboxmanage import out/virtualbox/debian-mate/debian.ovf
+----
+
+----
+packer build template/virtualbox/windows-base.json
+packer build template/virtualbox/windows-setup.json
+vboxmanage import out/virtualbox/debian-setup/windows.ovf
+----
+
+
+== Customize environments
+If you want to customize the environment, you should primarly look inside the `script` directory.
+Template and Bootstrap files are as minimal as possible, in order to not depend on a particular configuration or tool.
+This has the advantage that the script file have as much logic as possible.
+
+Scripts gives a much more liberty where to apply the same logic (install specific packages, enable or disable settings, and so on) on different environments, without having to duplicate them and without unnecessary dependencies.
+
+Some settings depend on the environment (like disabling or enabling Drag and drop on a guest system), so you may still need to adapt a template or preseed file to your needs.
+
+== Why so many templates per machine? Why so many build steps?
+Most projects provide just a template that takes an iso, and create a fully fledged Virtual Machine.
+They might accept tons of parameter for customizing the machine, since one size won't fit it all.
+
+What those project mostly miss is error handling.
+I wasted entire days because of windows update. It takes multiple hours to download and apply them.
+And what happens after you waited four hours and an error happens (for example packer is unable to eject a floppy drive because of an open handle?)
+Yep, destroy the whole machine and try again!
+
+Saving intermediary result (a naked windows machine, a naked windows machine with updates,...) gives me the possibility not to repeat the whole process, and also test my environments better, since I can inspect different steps one by one.
+
+What if you need quickly a machine for prototyping something and eventually throw it away?
+Is's surely irrelevant to wait a couple of hours for cleaning and filling the virtual drive with `0` in order to be able to compress it better and squeeze every little bit out of it.
+
+And if you already have a working environment and just want to install the newest updates without waiting the whole day? Or just add a couple of tools on top of it.
+Best practice would maybe be to create a completely new machine, but it's not practicable to always wait hours forgetting a working environment.
+Why not take an existing machine and add whats missing?
+
+These and other are the reason why there should be at least two packer templates for every machine.
+Unfortunately this has some overhead since we need to export/import the machine multiple times, but if you are experimenting with tose tools, it will save you hours and hours, if not days.
+
+I mostly mentioned windows, but also in the Linux world I had similar problems.
+You need the LaTex Suite or want to use a not so minimal desktop environment?
+You need to download multiple Gigabytes of data, even with a top-speed internet connection it takes some time to download configure and install everything.
+And yes, sometimes your are not able to download a package (probably the last one), and you need to try a second time.
+
+On the contrary there are not as many script files as in other projects.
+I believe that one scripts that does only one thing (install a specific program, change a specific setting, ...) for provisioning a VM is not very manageable.
+If we want to add or remove an action, we need to edit the template file, add the new script, and eventually edit the bootstrap file.
+Of course we should split our functionalities in order that every piece `does only one thing, and does it well`.
+
+Fortunately both unix shells and Microsoft powershell have functions, so all functionalities are splitted into functions and called from a "main" script.
+This way, most of the time, there is no need to speak different languages (shell dialect, packer config files, ...) and wonder how we should adapt the whole infrastructure to our needs.
+Just speak the (power)shell language and look at two files: the one with all functions (they are not that many!) and the main file for calling our functions.
