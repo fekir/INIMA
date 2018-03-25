@@ -24,7 +24,7 @@ function setup_disable_features_services {
 
   # disable media player
   dism /Online /Disable-Feature /FeatureName:"DirectPlay" /NoRestart | Out-Null
-  dism /Online /Enable-Feature  /FeatureName:"MediaPlayback" /NoRestart | Out-Null
+  dism /Online /Disable-Feature /FeatureName:"MediaPlayback" /NoRestart | Out-Null
   dism /Online /Disable-Feature /FeatureName:"MediaCenter" /NoRestart | Out-Null
   dism /Online /Disable-Feature /FeatureName:"WindowsMediaPlayer" /NoRestart | Out-Null
 
@@ -105,14 +105,14 @@ function setup_remove_universal_apps {
   If (!(Test-Path $advanced)) {
     New-Item $advanced -Force | Out-Null
   }
-  Set-ItemProperty -Path $advanced -Name "ShowSyncProviderNotifications" -Type DWord -Value 0
+  Set-ItemProperty -Path $advanced -Name "ShowSyncProviderNotifications" -Type DWord -Value 0 | Out-Null
 
   # hide windows store suggestion
   $explorer = "HKLM:\Software\Policies\Microsoft\Windows\Explorer"
     If (!(Test-Path $explorer)) {
     New-Item $explorer -Force | Out-Null
   }
-  Set-ItemProperty -Path $explorer -Name "NoUseStoreOpenWith" -Type DWord -Value 1
+  Set-ItemProperty -Path $explorer -Name "NoUseStoreOpenWith" -Type DWord -Value 1 | Out-Null
 }
 
 function setup_disable_defender {
@@ -125,15 +125,15 @@ function setup_i_desktop_icons {
     New-Item $registryPath -Force | Out-Null
   }
   # Computer
-  Set-ItemProperty -Path $registryPath -Name "{20D04FE0-3AEA-1069-A2D8-08002B30309D}" -Type DWord -Value 0
+  Set-ItemProperty -Path $registryPath -Name "{20D04FE0-3AEA-1069-A2D8-08002B30309D}" -Type DWord -Value 0 | Out-Null
   # User Files
-  Set-ItemProperty -Path $registryPath -Name "{59031A47-3F72-44A7-89C5-5595FE6B30EE}" -Type DWord -Value 0
+  Set-ItemProperty -Path $registryPath -Name "{59031A47-3F72-44A7-89C5-5595FE6B30EE}" -Type DWord -Value 0 | Out-Null
   # Control Panel
-  Set-ItemProperty -Path $registryPath -Name "{5399E694-6CE5-4D6C-8FCE-1D8870FDCBA0}" -Type DWord -Value 0
+  Set-ItemProperty -Path $registryPath -Name "{5399E694-6CE5-4D6C-8FCE-1D8870FDCBA0}" -Type DWord -Value 0 | Out-Null
   # Network
-  Set-ItemProperty -Path $registryPath -Name "{F02C1A0D-BE21-4350-88B0-7367FC96EF3C}" -Type DWord -Value 0
+  Set-ItemProperty -Path $registryPath -Name "{F02C1A0D-BE21-4350-88B0-7367FC96EF3C}" -Type DWord -Value 0 | Out-Null
   # recycle Bin
-  Set-ItemProperty -Path $registryPath -Name "{645FF040-5081-101B-9F08-00AA002F954E}" -Type DWord -Value 0
+  Set-ItemProperty -Path $registryPath -Name "{645FF040-5081-101B-9F08-00AA002F954E}" -Type DWord -Value 0 | Out-Null
 }
 
 function setup_i_sidebar {
@@ -173,9 +173,10 @@ function setup_i_sidebar {
   Remove-Item "$namespace\{0DB7E03F-FC29-4DC6-9020-FF41B59E513A}" -Force -ErrorAction SilentlyContinue
   Remove-Item "$namespacewow\{0DB7E03F-FC29-4DC6-9020-FF41B59E513A}" -Force -ErrorAction SilentlyContinue
 
+  # Add home dir to My PC
+  New-Item "$namespace\{59031a47-3f72-44a7-89c5-5595fe6b30ee}" -Force -ErrorAction SilentlyContinue | Out-Null
+  New-Item "$namespacewow\{59031a47-3f72-44a7-89c5-5595fe6b30ee}" -Force -ErrorAction SilentlyContinue | Out-Null
   # FIXME: Add home dir to sidebar
-  New-Item "$namespace\{59031a47-3f72-44a7-89c5-5595fe6b30ee}" -Force -ErrorAction SilentlyContinue
-  New-Item "$namespacewow\{59031a47-3f72-44a7-89c5-5595fe6b30ee}" -Force -ErrorAction SilentlyContinue
 }
 
 function setup_i_sound {
@@ -192,7 +193,7 @@ function setup_i_autocompl {
   if(!(Test-Path $regpath)){
     New-Item $regpath -Force | Out-Null
   }
-  Set-ItemProperty -path $regpath -Name "Append Completion" -Value "yes"
+  Set-ItemProperty -path $regpath -Name "Append Completion" -Value "yes" | Out-Null
 }
 
 function setup_i_explorer {
@@ -216,11 +217,11 @@ function setup_i_explorer {
   New-ItemProperty -path $exploreru -Name "HideFileExt" -Value 0 -Force | Out-Null
 
   # default explorer to computer
-  Set-ItemProperty -path $exploreru -Name "LaunchTo" -Type DWord -Value 1
+  Set-ItemProperty -path $exploreru -Name "LaunchTo" -Type DWord -Value 1 | Out-Null
 
   # change desktop location
-  #Set-ItemProperty -path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" -Name Desktop -Type ExpandString -value '%USERPROFILE%'
-  #Set-ItemProperty -path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders" -Name Desktop -Type ExpandString -vale '%USERPROFILE%'
+  #Set-ItemProperty -path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" -Name Desktop -Type ExpandString -value '%USERPROFILE%' | Out-Null
+  #Set-ItemProperty -path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders" -Name Desktop -Type ExpandString -vale '%USERPROFILE%' | Out-Null
   #Remove-Item "$env:USERPROFILE\Desktop" -Force -Recurse -ErrorAction SilentlyContinue
 
   # Remove never-used folders
@@ -263,24 +264,24 @@ function setup_i_colors {
 function setup_i_taskbar {
   $currentversion = "HKCU:\Software\Microsoft\Windows\CurrentVersion\"
   # hide search button
-  Set-ItemProperty -Path "$currentversion\Search" -Name "SearchboxTaskbarMode" -Type DWord -Value 0
+  Set-ItemProperty -Path "$currentversion\Search" -Name "SearchboxTaskbarMode" -Type DWord -Value 0 | Out-Null
   # remove virtual desktops button
-  Set-ItemProperty -Path "$currentversion\Explorer\Advanced" -Name "ShowTaskViewButton" -Type DWord -Value 0
+  Set-ItemProperty -Path "$currentversion\Explorer\Advanced" -Name "ShowTaskViewButton" -Type DWord -Value 0 | Out-Null
   # show all icons in tray
-  Set-ItemProperty -Path "$currentversion\Explorer" -Name "EnableAutoTray" -Type DWord -Value 0
+  Set-ItemProperty -Path "$currentversion\Explorer" -Name "EnableAutoTray" -Type DWord -Value 0 | Out-Null
 
   # FIXME: remove edge
 }
 
 function setup_i_disable_autoplay {
-  Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\AutoplayHandlers" -Name "DisableAutoplay" -Type DWord -Value 1
+  Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\AutoplayHandlers" -Name "DisableAutoplay" -Type DWord -Value 1 | Out-Null
 
   # maybe not necessary
   $registryPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer"
   If (!(Test-Path $registryPath)) {
     New-Item $registryPath -Force| Out-Null
   }
-  Set-ItemProperty -Path $registryPath -Name "NoDriveTypeAutoRun" -Type DWord -Value 255
+  Set-ItemProperty -Path $registryPath -Name "NoDriveTypeAutoRun" -Type DWord -Value 255 | Out-Null
 }
 
 function setup_theme {
@@ -298,9 +299,9 @@ function setup_theme {
 
 function setup_raise_uac {
   $registryPath = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System"
-  Set-ItemProperty -Path $registryPath -Name "ConsentPromptBehaviorAdmin" -Type DWord -Value 2
-  Set-ItemProperty -Path $registryPath -Name "ConsentPromptBehaviorUser" -Type DWord -Value 3
-  Set-ItemProperty -Path $registryPath -Name "PromptOnSecureDesktop" -Type DWord -Value 1
+  Set-ItemProperty -Path $registryPath -Name "ConsentPromptBehaviorAdmin" -Type DWord -Value 2 | Out-Null
+  Set-ItemProperty -Path $registryPath -Name "ConsentPromptBehaviorUser" -Type DWord -Value 3 | Out-Null
+  Set-ItemProperty -Path $registryPath -Name "PromptOnSecureDesktop" -Type DWord -Value 1 | Out-Null
 }
 
 function setup_clean_remove_onedrive {
@@ -309,7 +310,7 @@ function setup_clean_remove_onedrive {
   If (!(Test-Path $registryPath)) {
     New-Item $registryPath -Force| Out-Null
   }
-  Set-ItemProperty -Path $registryPath -Name "DisableFileSyncNGSC" -Type DWord -Value 1
+  Set-ItemProperty -Path $registryPath -Name "DisableFileSyncNGSC" -Type DWord -Value 1 | Out-Null
 
   # "uninstall"
   Stop-Process -Name OneDrive -ErrorAction SilentlyContinue
@@ -369,6 +370,9 @@ function setup_vm {
   powercfg -Change -monitor-timeout-ac 0
   powercfg -Change -monitor-timeout-dc 0
 
+  powercfg /SETDCVALUEINDEX SCHEME_CURRENT SUB_NONE CONSOLELOCK 0
+  powercfg /SETACVALUEINDEX SCHEME_CURRENT SUB_NONE CONSOLELOCK 0
+
   disable-computerrestore -drive "$env:HOMEDRIVE\"
   # check how to disable wifi
 
@@ -379,7 +383,7 @@ function setup_vm {
   If (!(Test-Path $registryPath)) {
     New-Item $registryPath -Force| Out-Null
   }
-  Set-ItemProperty -Path $registryPath -Name "DisableLockWorkstation" -Type DWord -Value 1
+  Set-ItemProperty -Path $registryPath -Name "DisableLockWorkstation" -Type DWord -Value 1 | Out-Null
 
   # $MountResult = Mount-DiskImage -ImagePath $iso -StorageType ISO -PassThru
   # $MountLocation = "$(($MountResult | Get-Volume).DriveLetter):\"
@@ -476,6 +480,9 @@ function setup_cleanup {
 
   Write-Host "clean log"
   wevtutil el | Foreach-Object {wevtutil cl "$_"} -ErrorAction SilentlyContinue
+  Remove-Item -Recurse "$env:HOMEDRIVE\Windows\Logs\*" -Force -ErrorAction SilentlyContinue | Out-Null
+
+  Remove-Item -Recurse "$env:HOMEDRIVE\Windows\Prefetch\*" -Force -ErrorAction SilentlyContinue | Out-Null
 
   Write-Host "defrag"
   Optimize-Volume -DriveLetter C
@@ -511,37 +518,38 @@ function setup_install_cygwin {
 
 # sets npp as default app for any file with no associations
 # and add shortcut for run command
+# FIXME: change npp as default for txt, ini and other files already associated with notepad
 function setup_i_conf_npp {
   $registryPath = "Registry::HKEY_CLASSES_ROOT\Unknown\shell"
   If (!(Test-Path $registryPath)) {
     New-Item $registryPath -Force| Out-Null
   }
-  Set-ItemProperty -Path $registryPath -name '(Default)' -Value "notepad"
+  Set-ItemProperty -Path $registryPath -name '(Default)' -Value "notepad" | Out-Null
 
   $registryPath = "Registry::HKEY_CLASSES_ROOT\Unknown\shell\notepad"
   If (!(Test-Path $registryPath)) {
     New-Item $registryPath -Force| Out-Null
   }
-  Set-ItemProperty -Path $registryPath -name '(Default)' -Value "Open with Notepad++"
+  Set-ItemProperty -Path $registryPath -name '(Default)' -Value "Open with Notepad++" | Out-Null
 
   $registryPath = "Registry::HKEY_CLASSES_ROOT\Unknown\shell\notepad\command"
   If (!(Test-Path $registryPath)) {
     New-Item $registryPath -Force| Out-Null
   }
-  Set-ItemProperty -Path $registryPath  -name '(Default)' -Value "C:\Program Files\Notepad++\notepad++.exe %1"
+  Set-ItemProperty -Path $registryPath  -name '(Default)' -Value "C:\Program Files\Notepad++\notepad++.exe %1" | Out-Null
 
   $registryPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\npp.exe"
   If (!(Test-Path $registryPath)) {
     New-Item $registryPath -Force| Out-Null
   }
-  Set-ItemProperty -Path $registryPath  -name '(Default)' -Value "C:\Program Files\Notepad++\notepad++.exe"
+  Set-ItemProperty -Path $registryPath  -name '(Default)' -Value "C:\Program Files\Notepad++\notepad++.exe" | Out-Null
 }
 
 function setup_install_choco {
   iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
   choco feature enable -n allowGlobalConfirmation
 
-  cinst $env:SETUP_CHOCO_PACKAGES.split(",") --yes --limitoutput
+  cinst $env:SETUP_CHOCO_PACKAGES.split(",") --yes --limit-output --no-progress
 
   if ($SETUP_CHOCO_PACKAGES -like '*notepadplusplus*') {
     setup_i_conf_npp
