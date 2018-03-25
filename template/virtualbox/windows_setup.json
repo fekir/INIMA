@@ -62,7 +62,7 @@
 		"locale": "en_US",
 		"keymap": "en-US",
 		"vmachine": "true",
-		"choco_packages": "7zip,irfanview,nano,notepadplusplus,sysinternals,sumatrapdf.install",
+		"choco_packages": "7zip,clink,irfanview,nano,notepadplusplus,sysinternals,sumatrapdf.install",
 		"cygwin_packages": "chere,zsh,wget,nano,tmux,mc,bash-completion,tree",
 		"cleanup": "no_universal_apps"
 	}
