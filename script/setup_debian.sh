@@ -31,7 +31,7 @@ SETUP_VMACHINE="${SETUP_VMACHINE:-false}"
 SETUP_PACKAGES="${SETUP_PACKAGES:-}"
 SETUP_CLEAN="${SETUP_CLEAN:-false}"
 
-if [ "$SETUP_VMACHINE" = "true" ]; then
+if [ ! -z "$SETUP_VMACHINE" ]; then
   setup_vm
   setup_disable_sudo_pwd
 fi

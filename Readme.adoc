@@ -42,15 +42,33 @@ packer build template/virtualbox/windows-setup.json
 vboxmanage import out/virtualbox/debian-setup/windows.ovf
 ----
 
-
 == Customize environments
 If you want to customize the environment, you should primarly look inside the `script` directory.
 Template and Bootstrap files are as minimal as possible, in order to not depend on a particular configuration or tool.
 This has the advantage that the script file have as much logic as possible.
 
-Scripts gives a much more liberty where to apply the same logic (install specific packages, enable or disable settings, and so on) on different environments, without having to duplicate them and without unnecessary dependencies.
+Scripts gives much more liberty where to apply the same logic (install specific packages, enable or disable settings, and so on) on different environments, without having to duplicate them on all templates, and without unnecessary dependencies.
 
 Some settings depend on the environment (like disabling or enabling Drag and drop on a guest system), so you may still need to adapt a template or preseed file to your needs.
+
+=== Supported parameters
+Even if it is relatively easy to customize the scripts, some actions, like installing programs, are frequently required.
+
+Supported parameters are:
+
+	- cpus: number of cpus to assign to the virtual machine
+	- memory: how much memory, in MB, to assign to the virtual machine
+	- headless: boolean parameter that tell packer to show a GUI where the machine is provisioned
+	- password: login password/password to set in the `*_base` templates (not supported on windows templates)
+	- username: login username/username to set in the `*_base` templates (not supported on windows templates)
+	- vm_name: name of virtual machine
+	- vmachine: set this value to "linux" or "windows" in order ot load the right guest additions, if empty, not additionas are loaded (saves a lot of time with windows)
+	- packages/choco_packages/cygwin_packages: comma separated list of package to install. Since windows does not have an integrated package manager, use `choco_packages` and `cygwin_packages`
+	- keymap: keymap of the virtual machine, formats are host-specific (for example on GNU/Linux the english keyboard is en, on Windows it's en-US)
+	- locale: locale of the virtual machine, formats are host-specific (no currently supported on windows)
+	- cleanup: if at the end of the setup we need to clean as mcuh as possible to reduce space requirements. This passage can be time consuming.
+
+The list might not be complete, and some parameter might be avaiable only on some provisioners/gest OS.
 
 == Why so many templates per machine? Why so many build steps?
 Most projects provide just a template that takes an iso, and create a fully fledged Virtual Machine.
@@ -73,7 +91,7 @@ Why not take an existing machine and add whats missing?
 These and other are the reason why there should be at least two packer templates for every machine.
 Unfortunately this has some overhead since we need to export/import the machine multiple times, but if you are experimenting with tose tools, it will save you hours and hours, if not days.
 
-I mostly mentioned windows, but also in the Linux world I had similar problems.
+I mostly mentioned Windows, but also with GNU/Linux distributions I had similar problems.
 You need the LaTex Suite or want to use a not so minimal desktop environment?
 You need to download multiple Gigabytes of data, even with a top-speed internet connection it takes some time to download configure and install everything.
 And yes, sometimes your are not able to download a package (probably the last one), and you need to try a second time.
@@ -86,3 +104,24 @@ Of course we should split our functionalities in order that every piece `does on
 Fortunately both unix shells and Microsoft powershell have functions, so all functionalities are splitted into functions and called from a "main" script.
 This way, most of the time, there is no need to speak different languages (shell dialect, packer config files, ...) and wonder how we should adapt the whole infrastructure to our needs.
 Just speak the (power)shell language and look at two files: the one with all functions (they are not that many!) and the main file for calling our functions.
+
+
+== Known bugs
+
+=== I'm unable to update a vmware machine
+If you get a error like
+`Build 'vmware-vmx' errored: Error compacting disk: VMware error: Failed to open the disk '/patho/to/auto detect' : A file was not found (0x4).` or `Failed to defragment: A file was not found (0x4).`
+Then it is a known issue (see https://github.com/hashicorp/packer/issues/4885)
+A possible solution is to edit the `.vmx` file and replace the line `ide0:0.filename = "auto detect"` with `ide0:0.autodetect = "true"`, something like
+
+````
+sed -i 's/^ide0:0.filename[[:space:]]*=[[:space:]]*\"auto detect\"/ide0:0.autodetect = \"true\"/' <vmx file>
+````
+
+should do the job.
+
+=== The templates of QEMU do not work
+I'm sorry, I was not able to test them because of this https://github.com/hashicorp/packer/issues/5969[issue].
+
+=== There are no templates for parallel (or other builders)
+Sorry, I do not have the possibility to test parallel.

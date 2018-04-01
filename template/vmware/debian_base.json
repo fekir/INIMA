@@ -1,28 +1,43 @@
 {
 	"builders": [
 		{
-			"type": "virtualbox-ovf",
+			"type": "vmware-iso",
 			"vm_name": "{{ user `vm_name` }}",
-			"output_directory": "out/virtualbox/{{user `vm_name`}}_packages",
-			"guest_additions_path": "/tmp/VBoxGuestAdditions.iso",
-			"virtualbox_version_file": "",
+			"guest_os_type": "{{user `guest_os_type`}}",
+			"disk_size": "{{user `disk_size`}}",
+			"output_directory": "out/vmware/{{user `vm_name`}}_base",
+			"boot_wait": "5s",
+			"boot_command": [
+				"<esc><wait>",
+				"install",
+				" auto",
+				" url=http://{{.HTTPIP}}:{{.HTTPPort}}/{{user `preseed`}}",
+				" debian-installer=en_US",
+				" locale={{ user `locale` }}",
+				" keymap={{ user `keymap` }}",
+				" netcfg/get_hostname={{user `hostname`}}",
+				" netcfg/get_domain=vm ",
+				" passwd/user-fullname={{user `username`}}",
+				" passwd/username={{user `username`}}",
+				" passwd/user-password={{user `password`}}",
+				" passwd/user-password-again={{user `password`}}",
+				"<enter>"
+			],
 			"headless": "{{user `headless`}}",
 			"http_directory": "{{user `http_directory`}}",
-			"source_path": "{{user `source_path`}}",
-			"post_shutdown_delay": "1m",
+			"iso_checksum_url": "{{user `iso_checksum_url `}}",
+			"iso_checksum_type": "{{user `iso_checksum_type`}}",
+			"iso_urls": [
+				"{{user `iso_url`}}"
+			],
 			"shutdown_command": "echo '{{user `password`}}' | sudo -S shutdown -h now",
 			"ssh_password": "{{user `password`}}",
 			"ssh_username": "{{user `username`}}",
 			"ssh_wait_timeout": "10000s",
-			"vboxmanage": [
-				[ "modifyvm", "{{.Name}}", "--memory", "{{user `memory`}}" ],
-				[ "modifyvm", "{{.Name}}", "--cpus", "{{user `cpus`}}" ],
-				[ "modifyvm", "{{.Name}}", "--vram", "{{ user `vram` }}" ],
-				[ "modifyvm", "{{.Name}}", "--clipboard", "bidirectional" ],
-				[ "modifyvm", "{{.Name}}", "--draganddrop", "bidirectional" ],
-				[ "modifyvm", "{{.Name}}", "--usb", "on" ],
-				[ "modifyvm", "{{.Name}}", "--audio" ,"none"]
-			]
+			"vmx_data": {
+				"memsize": "{{user `memory`}}",
+				"numvcpus": "{{user `cpus`}}"
+			}
 		}
 	],
 	"provisioners": [
@@ -55,6 +70,7 @@
 	],
 	"variables": {
 		"cpus": "1",
+		"disk_size": "65536",
 		"memory": "512",
 		"vram": "32",
 		"headless": "true",
@@ -63,15 +79,21 @@
 		"ftp_proxy": "{{env `ftp_proxy`}}",
 		"http_proxy": "{{env `http_proxy`}}",
 		"https_proxy": "{{env `https_proxy`}}",
-		"source_path": "out/virtualbox/debian_mate/debian.ovf",
+		"http_directory": "bootstrap",
+		"iso_checksum_url ": "https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/SHA1SUMS",
+		"iso_checksum_type": "sha1",
+		"iso_url": "https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso",
+		"preseed": "debian.cfg",
+		"hostname" : "debianvm",
 		"password": "123456",
 		"username": "debianuser",
 		"version": "0.1.0",
 		"vm_name": "debian",
+		"guest_os_type": "debian9-64",
 		"locale": "en_US",
 		"keymap": "en",
-		"vmachine": "linux",
-		"packages": "neomutt,neovim",
+		"vmachine": "",
+		"packages": "",
 		"cleanup": ""
 	}
 }

@@ -20,15 +20,15 @@ if ($env:SETUP_KEYMAP) {
     Set-WinUserLanguageList -LanguageList "$env:SETUP_KEYMAP" -Force
 }
 
-if ($env:SETUP_VMACHINE -eq "true" ) {
+if ($env:SETUP_VMACHINE) {
   setup_vm
 }
 
-if ( $env:SETUP_CHOCO_PACKAGES ) {
+if ($env:SETUP_CHOCO_PACKAGES) {
   setup_install_choco
 }
 
-if ( $env:SETUP_CYGWIN_PACKAGES ) {
+if ($env:SETUP_CYGWIN_PACKAGES) {
   setup_install_cygwin
 }
 

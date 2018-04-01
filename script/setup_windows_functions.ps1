@@ -385,21 +385,19 @@ function setup_vm {
   }
   Set-ItemProperty -Path $registryPath -Name "DisableLockWorkstation" -Type DWord -Value 1 | Out-Null
 
-  # $MountResult = Mount-DiskImage -ImagePath $iso -StorageType ISO -PassThru
-  # $MountLocation = "$(($MountResult | Get-Volume).DriveLetter):\"
+  if ($env:PACKER_BUILDER_TYPE -like "*virtualbox*") {
+    # FIXME: need to find right drive
+    if(test-path E:\ -Filter *.cer){
+      Get-ChildItem E:\cert -Filter *.cer | ForEach-Object { certutil -addstore -f "TrustedPublisher" $_.FullName }
+    }
+    Start-Process -FilePath "E:\VBoxWindowsAdditions.exe" -ArgumentList "/S" -Wait
+  } elseif ($env:PACKER_BUILDER_TYPE -like "*wmvare*") {
+    $MountResult = Mount-DiskImage -ImagePath "C:/Windows/Temp/vmwaretools.iso" -StorageType ISO -PassThru
+    $MountLocation = "$(($MountResult | Get-Volume).DriveLetter):\"
 
-  # $files = Get-ChildItem "$MountLocation/cert" -filter "vbox*.cer" -force
-  # for ($i=0; $i -lt $files.Count; $i++) {
-  #   & $MountLocation/cert/VBoxCertUtil add-trusted-publisher $i --root $i
-  # }
-  # & $MountLocation/BoxWindowsAdditions.exe /S
-  # $MountResult | Dismount-DiskImage
-
-  # FIXME: need to find right drive
-  if(test-path E:\ -Filter *.cer){
-    Get-ChildItem E:\cert -Filter *.cer | ForEach-Object { certutil -addstore -f "TrustedPublisher" $_.FullName }
+    & $MountLocation/setup.exe /S /v "/qn REBOOT=R"
+    $MountResult | Dismount-DiskImage
   }
-  Start-Process -FilePath "E:\VBoxWindowsAdditions.exe" -ArgumentList "/S" -Wait
 }
 
 function setup_empty_recycle_bin {

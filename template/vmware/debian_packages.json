@@ -1,28 +1,20 @@
 {
 	"builders": [
 		{
-			"type": "virtualbox-ovf",
+			"type": "vmware-vmx",
 			"vm_name": "{{ user `vm_name` }}",
-			"output_directory": "out/virtualbox/{{user `vm_name`}}_packages",
-			"guest_additions_path": "/tmp/VBoxGuestAdditions.iso",
-			"virtualbox_version_file": "",
+			"output_directory": "out/vmware/{{user `vm_name`}}_packages",
 			"headless": "{{user `headless`}}",
 			"http_directory": "{{user `http_directory`}}",
 			"source_path": "{{user `source_path`}}",
-			"post_shutdown_delay": "1m",
 			"shutdown_command": "echo '{{user `password`}}' | sudo -S shutdown -h now",
 			"ssh_password": "{{user `password`}}",
 			"ssh_username": "{{user `username`}}",
 			"ssh_wait_timeout": "10000s",
-			"vboxmanage": [
-				[ "modifyvm", "{{.Name}}", "--memory", "{{user `memory`}}" ],
-				[ "modifyvm", "{{.Name}}", "--cpus", "{{user `cpus`}}" ],
-				[ "modifyvm", "{{.Name}}", "--vram", "{{ user `vram` }}" ],
-				[ "modifyvm", "{{.Name}}", "--clipboard", "bidirectional" ],
-				[ "modifyvm", "{{.Name}}", "--draganddrop", "bidirectional" ],
-				[ "modifyvm", "{{.Name}}", "--usb", "on" ],
-				[ "modifyvm", "{{.Name}}", "--audio" ,"none"]
-			]
+			"vmx_data": {
+				"memsize": "{{user `memory`}}",
+				"numvcpus": "{{user `cpus`}}"
+			}
 		}
 	],
 	"provisioners": [
@@ -63,7 +55,7 @@
 		"ftp_proxy": "{{env `ftp_proxy`}}",
 		"http_proxy": "{{env `http_proxy`}}",
 		"https_proxy": "{{env `https_proxy`}}",
-		"source_path": "out/virtualbox/debian_mate/debian.ovf",
+		"source_path": "out/vmware/debian_base/debian.vmx",
 		"password": "123456",
 		"username": "debianuser",
 		"version": "0.1.0",

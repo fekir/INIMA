@@ -81,18 +81,24 @@ setup_language(){
 setup_vm(){
   i_setup_reduce_grub_timeout_to_0
 
-  apt-get install --no-install-recommends --assume-yes "linux-headers-$(uname -r)" build-essential perl >/dev/null
-
   SSH_USERNAME=${SSH_USERNAME:-vagrant}
 
 
   if [ "${PACKER_BUILDER_TYPE#virtualbox}" != "$PACKER_BUILDER_TYPE" ]; then
+    apt-get install --no-install-recommends --assume-yes "linux-headers-$(uname -r)" build-essential perl >/dev/null
     apt-get install --no-install-recommends --assume-yes dkms >/dev/null
     mount -o loop "/tmp/VBoxGuestAdditions.iso" /mnt >/dev/null
     # https://stackoverflow.com/questions/25434139/vboxlinuxadditions-run-never-exits-with-0
     sh /mnt/VBoxLinuxAdditions.run || true
     umount /mnt # fixme: remove also on failure of VBoxLinuxAdditions
     adduser "${SSH_USERNAME}" vboxsf
+  elif [ "${PACKER_BUILDER_TYPE#vmware}" != "$PACKER_BUILDER_TYPE" ]; then
+    #mount -o loop /tmp/VMWareTools.iso /mnt
+    #tar zxf "/mnt/VMwareTools-*.tar.gz" -C /tmp
+    #umount /mnt
+    #/tmp/vmware-tools-distrib/vmware-install.pl --default
+    #rm -rf "/tmp/vmware-tools-distrib"
+    apt-get --assume-yes install open-vm-tools # recomended by VMwareTool installer
   fi
 
   # disable hibernation

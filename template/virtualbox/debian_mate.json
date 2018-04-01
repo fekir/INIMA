@@ -71,7 +71,7 @@
 		"vm_name": "debian",
 		"locale": "en_US",
 		"keymap": "en",
-		"vmachine": "true",
+		"vmachine": "linux",
 		"packages": "neomutt",
 		"cleanup": ""
 	}
