@@ -59,8 +59,8 @@ function setup_disable_features_services {
   Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\People" -Name "PeopleBand" -Type DWord -Value 0 | Out-Null
 
 
-  Set-ItemProperty -Path "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\GameDVR" -Name "AppCaptureEnabled" -Type DWord -Value 0 | Out-Null
-  Set-ItemProperty -Path "HKCU\System\GameConfigStore" -Name "GameDVR_Enabled" -Type DWord -Value 0 | Out-Null
+  Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\GameDVR" -Name "AppCaptureEnabled" -Type DWord -Value 0 | Out-Null
+  Set-ItemProperty -Path "HKCU:\System\GameConfigStore" -Name "GameDVR_Enabled" -Type DWord -Value 0 | Out-Null
 }
 
 function setup_fix_disk_usage {
@@ -221,13 +221,13 @@ function setup_i_explorer {
 
   # change desktop location
   #Set-ItemProperty -path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" -Name Desktop -Type ExpandString -value '%USERPROFILE%' | Out-Null
-  #Set-ItemProperty -path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders" -Name Desktop -Type ExpandString -vale '%USERPROFILE%' | Out-Null
+  #Set-ItemProperty -path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders" -Name Desktop -Type ExpandString -value '%USERPROFILE%' | Out-Null
   #Remove-Item "$env:USERPROFILE\Desktop" -Force -Recurse -ErrorAction SilentlyContinue
 
   # Remove never-used folders
   #Remove-Item "$env:USERPROFILE\Contacts" -Force -Recurse -ErrorAction SilentlyContinue
   #Remove-Item "$env:USERPROFILE\3D Objects" -Force -Recurse -ErrorAction SilentlyContinue
-  # but if it causes problems, or those folders get recreated, just hide them
+  # if it causes problems, or those folders get recreated, hide them (unfortunately we wont notice if they are used...)
   #attrib "$env:USERPROFILE\Desktop" +s +h | Out-Null
 }
 
@@ -262,7 +262,7 @@ function setup_i_colors {
 }
 
 function setup_i_taskbar {
-  $currentversion = "HKCU:\Software\Microsoft\Windows\CurrentVersion\"
+  $currentversion = "HKCU:\Software\Microsoft\Windows\CurrentVersion"
   # hide search button
   Set-ItemProperty -Path "$currentversion\Search" -Name "SearchboxTaskbarMode" -Type DWord -Value 0 | Out-Null
   # remove virtual desktops button
@@ -391,11 +391,11 @@ function setup_vm {
       Get-ChildItem E:\cert -Filter *.cer | ForEach-Object { certutil -addstore -f "TrustedPublisher" $_.FullName }
     }
     Start-Process -FilePath "E:\VBoxWindowsAdditions.exe" -ArgumentList "/S" -Wait
-  } elseif ($env:PACKER_BUILDER_TYPE -like "*wmvare*") {
+  } elseif ($env:PACKER_BUILDER_TYPE -like "*vmware*") {
     $MountResult = Mount-DiskImage -ImagePath "C:/Windows/Temp/vmwaretools.iso" -StorageType ISO -PassThru
     $MountLocation = "$(($MountResult | Get-Volume).DriveLetter):\"
 
-    & $MountLocation/setup.exe /S /v "/qn REBOOT=R"
+    $p = Start-Process -Wait -PassThru -FilePath "$MountLocation/setup.exe" -ArgumentList "/S /l C:\Windows\temp\vmware.log /v""/qn REBOOT=R"""
     $MountResult | Dismount-DiskImage
   }
 }
