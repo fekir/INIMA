@@ -28,11 +28,15 @@ setup_tmp(){
 }
 
 setup_sources(){
-  sed -i "/^deb cdrom:/s/^/#/" /etc/apt/sources.list
+  sed --in-place "/^deb cdrom:/s/^/#/" /etc/apt/sources.list
+
+  # While it is a good idea to have such service, it causes to much trouble when automating package management
+  # https://wiki.debian.org/UnattendedUpgrades
+  apt-get --assume-yes purge unattended-upgrades >/dev/null || true
 
   apt-get update >/dev/null
   apt-get --no-install-recommends --assume-yes upgrade >/dev/null
-  apt-get --no-install-recommends --assume-yes -q install aptitude >/dev/null
+  apt-get --no-install-recommends --assume-yes --quiet install aptitude >/dev/null
 }
 
 setup_lightdm_autologin(){
