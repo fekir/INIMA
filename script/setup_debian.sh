@@ -25,26 +25,24 @@ setup_tmp
 setup_sources
 setup_language
 
+
 #default settings
-SETUP_MATE="${SETUP_MATE:-false}"
 SETUP_VMACHINE="${SETUP_VMACHINE:-false}"
 SETUP_PACKAGES="${SETUP_PACKAGES:-}"
 SETUP_CLEAN="${SETUP_CLEAN:-false}"
 
-if [ ! -z "$SETUP_VMACHINE" ]; then
+if [ "$SETUP_VMACHINE" != "false" ]; then
   setup_vm
   setup_disable_sudo_pwd
 fi
 
-if [ "$SETUP_MATE" = "true" ] ; then
-  setup_mate
-  if [ "$SETUP_VMACHINE" = "true" ]; then
-    setup_mate_autologin
+if [ -n "${SETUP_DE:-}" ] ; then
+  setup_de
+  if [ "$SETUP_VMACHINE" != "false" ]; then
+    setup_lightdm_autologin
   fi
-  setup_common_gui_packages
   setup_tui_tools
 fi
-
 
 if [ -n "${SETUP_PACKAGES:-}" ]; then
   setup_additional_packages

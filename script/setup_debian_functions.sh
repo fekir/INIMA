@@ -35,29 +35,58 @@ setup_sources(){
   apt-get --no-install-recommends --assume-yes -q install aptitude >/dev/null
 }
 
-setup_mate(){
-  # no redirect since this command will take long
-  apt-get --no-install-recommends --assume-yes install task-mate-desktop
-  apt-get --no-install-recommends --assume-yes install caja-open-terminal pluma eom atril >/dev/null
-  update-alternatives --set x-terminal-emulator /usr/bin/mate-terminal.wrapper >/dev/null
-  apt-get --assume-yes purge xterm >/dev/null
-  # see https://github.com/mate-desktop/mate-panel/issues/57
-  # otherwise some shortcuts in the menu, like mc, vim, htop, ... are broken since they use xterm directly...
-  [ -f /usr/bin/xterm ] || ln -s /usr/bin/x-terminal-emulator /usr/bin/xterm
-
-  apt-get --no-install-recommends --assume-yes install apt-xapian-index synaptic >/dev/null
-
-  apt-get --no-install-recommends --assume-yes install xdg-user-dirs >/dev/null
-}
-
-setup_mate_autologin(){
-  lightgdmconf='/usr/share/lightdm/lightdm.conf.d/60-lightdm-gtk-greeter.conf'
-  grep -q -F '[SeatDefaults]' "$lightgdmconf" 2>/dev/null || printf '[SeatDefaults]\n' >> "$lightgdmconf"
+setup_lightdm_autologin(){
+  # https://wiki.ubuntu.com/LightDM
+  if [ ! -f '/etc/lightdm/' ]; then
+    return
+  fi
+  mkdir '/etc/lightdm/lightdm.conf.d/' >/dev/null
+  #lightdmconf='/usr/share/lightdm/lightdm.conf.d/60-lightdm-gtk-greeter.conf'
+  lightdmconf='/etc/lightdm/lightdm.conf.d/99-autologin.conf'
+  grep --quiet --fixed-strings '[SeatDefaults]' "$lightdmconf" 2>/dev/null || printf '[SeatDefaults]\n' >> "$lightdmconf"
 #  printf "autologin-user=%s\n" "$USER" >> /usr/share/lightdm/lightdm.conf.d/60-lightdm-gtk-greeter.conf
 # hard-coded username, no better idea...
   SSH_USERNAME=${SSH_USERNAME:-vagrant}
   printf 'autologin-user=%s\n' "$SSH_USERNAME" >> "$lightgdmconf"
 }
+
+setup_de(){
+  #if dpkg --list "task-${SETUP_DE}-desktop" >/dev/null; then # FIXME: did not work on naked system
+    apt-get --no-install-recommends --assume-yes install "task-${SETUP_DE}-desktop"
+  #fi
+
+  if [ "${SETUP_DE#mate}" != "$SETUP_DE" ]; then
+    apt-get --no-install-recommends --assume-yes install caja-open-terminal pluma eom atril >/dev/null
+    update-alternatives --set x-terminal-emulator /usr/bin/mate-terminal.wrapper >/dev/null
+
+    # see https://github.com/mate-desktop/mate-panel/issues/57
+    # otherwise some shortcuts in the menu, like mc, vim, htop, ... are broken since they use xterm directly (onl when using mate)...
+    apt-get --assume-yes purge xterm >/dev/null
+    [ -f /usr/bin/xterm ] || ln -s /usr/bin/x-terminal-emulator /usr/bin/xterm
+  elif [ "${SETUP_DE#lxde}" != "$SETUP_DE" ]; then
+    apt-get --no-install-recommends --assume-yes install obconf >/dev/null
+    update-alternatives --set x-terminal-emulator /usr/bin/lxterminal >/dev/null
+  elif [ "${SETUP_DE#lxqt}" != "$SETUP_DE" ]; then
+    update-alternatives --set x-terminal-emulator /usr/bin/qterminal >/dev/null
+
+    # see explanation in mate
+    apt-get --assume-yes purge xterm >/dev/null
+    [ -f /usr/bin/xterm ] || ln -s /usr/bin/x-terminal-emulator /usr/bin/xterm
+  fi
+
+  # FIXME: add gnome, kde, enlightenment, ...
+
+  apt-get --no-install-recommends --assume-yes install apt-xapian-index synaptic xdg-user-dirs >/dev/null
+
+  apt-get --no-install-recommends --assume-yes install firefox-esr >/dev/null
+  update-alternatives --set x-www-browser /usr/bin/firefox-esr 2>/dev/null || true
+  update-alternatives --set x-www-browser /usr/bin/firefox 2>/dev/null || true
+  update-alternatives --set gnome-www-browser /usr/bin/firefox-esr 2>/dev/null || true
+  update-alternatives --set gnome-www-browser /usr/bin/firefox 2>/dev/null || true
+
+  apt-get --no-install-recommends --assume-yes install pidgin thunderbird >/dev/null
+}
+
 
 setup_language(){
   # set selection before installing, otherwise configuration seems to get lost
@@ -111,16 +140,6 @@ setup_disable_sudo_pwd(){
   chmod 0440 /tmp/sudoers_user
   mv /tmp/sudoers_user "/etc/sudoers.d/$SSH_USERNAME"
   # https://askubuntu.com/questions/98006/how-do-i-prevent-policykit-from-asking-for-a-password
-}
-
-setup_common_gui_packages(){
-  apt-get --no-install-recommends --assume-yes install firefox-esr >/dev/null
-  update-alternatives --set x-www-browser /usr/bin/firefox-esr 2>/dev/null || true
-  update-alternatives --set x-www-browser /usr/bin/firefox 2>/dev/null || true
-  update-alternatives --set gnome-www-browser /usr/bin/firefox-esr 2>/dev/null || true
-  update-alternatives --set gnome-www-browser /usr/bin/firefox 2>/dev/null || true
-
-  apt-get --no-install-recommends --assume-yes install pidgin thunderbird >/dev/null
 }
 
 setup_tui_tools(){

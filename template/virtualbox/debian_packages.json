@@ -36,6 +36,7 @@
 			"pause_before": "5s",
 			"expect_disconnect": "true",
 			"environment_vars": [
+				"SETUP_DE={{user `de`}}",
 				"SETUP_VMACHINE={{user `vmachine`}}",
 				"SETUP_PACKAGES={{user `packages`}}",
 				"SETUP_CLEAN={{user `cleanup`}}",
@@ -63,7 +64,7 @@
 		"ftp_proxy": "{{env `ftp_proxy`}}",
 		"http_proxy": "{{env `http_proxy`}}",
 		"https_proxy": "{{env `https_proxy`}}",
-		"source_path": "out/virtualbox/debian_mate/debian.ovf",
+		"source_path": "out/virtualbox/debian_base/debian.ovf",
 		"password": "123456",
 		"username": "debianuser",
 		"version": "0.1.0",
@@ -72,6 +73,7 @@
 		"keymap": "en",
 		"vmachine": "linux",
 		"packages": "neomutt,neovim",
+		"de": "",
 		"cleanup": ""
 	}
 }
