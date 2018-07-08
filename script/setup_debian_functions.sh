@@ -51,7 +51,7 @@ setup_lightdm_autologin(){
 #  printf "autologin-user=%s\n" "$USER" >> /usr/share/lightdm/lightdm.conf.d/60-lightdm-gtk-greeter.conf
 # hard-coded username, no better idea...
   SSH_USERNAME=${SSH_USERNAME:-vagrant}
-  printf 'autologin-user=%s\n' "$SSH_USERNAME" >> "$lightgdmconf"
+  grep --quiet --fixed-strings 'autologin-user' "$lightdmconf" 2>/dev/null || printf 'autologin-user=%s\n' "$SSH_USERNAME" >> "$lightdmconf"
 }
 
 setup_de(){
