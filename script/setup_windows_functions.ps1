@@ -63,7 +63,13 @@ function setup_disable_features_services {
   Set-ItemProperty -Path "HKCU:\System\GameConfigStore" -Name "GameDVR_Enabled" -Type DWord -Value 0 | Out-Null
 }
 
-function setup_fix_disk_usage {
+function setup_disk {
+  # removes some functionality, hopefully increases performance
+  # it could break some old apps...
+  # https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/fsutil-behavior
+  fsutil behavior set disable8dot3 1
+  fsutil behavior set disablelastaccess 1
+
   # fixed 100% disk usage on some machines
   New-Item 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' -Force | New-ItemProperty -Name EnableBalloonTips -Value 0 -Force | Out-Null
 }

@@ -15,6 +15,7 @@
 . "C:/Windows/Temp/setup_windows_functions.ps1"
 
 setup_theme
+setup_disk
 
 if ($env:SETUP_KEYMAP) {
     Set-WinUserLanguageList -LanguageList "$env:SETUP_KEYMAP" -Force
