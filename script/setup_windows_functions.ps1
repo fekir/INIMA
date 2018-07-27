@@ -416,11 +416,16 @@ function setup_vm {
   Stop-Service "Power" -ErrorAction SilentlyContinue
   Set-Service  "Power" -StartupType disabled
 
+  # disable locking with <Win>+l
   $registryPath = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
   If (!(Test-Path $registryPath)) {
     New-Item $registryPath -Force| Out-Null
   }
   Set-ItemProperty -Path $registryPath -Name "DisableLockWorkstation" -Type DWord -Value 1 | Out-Null
+
+  foreach ($user in (Get-WmiObject -Class Win32_UserAccount -filter "LocalAccount = True")){
+    Set-LocalUser -Name $user.Name -PasswordNeverExpires 1
+  }
 
   if ($env:PACKER_BUILDER_TYPE -like "*virtualbox*") {
     # FIXME: need to find right drive
