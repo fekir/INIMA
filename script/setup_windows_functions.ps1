@@ -67,7 +67,7 @@ function setup_disable_features_services {
   dism /Online /Disable-Feature /FeatureName:"FaxServicesClientPackage" /NoRestart | Out-Null
 
   # xbox
-  Get-Service XblAuthManager,XblGameSave,XboxNetApiSvc -ErrorAction SilentlyContinue | Stop-Service | Set-Service -StartupType Disabled
+  Get-Service XblAuthManager,XblGameSave,XboxNetApiSvc -ErrorAction SilentlyContinue | Stop-Service -PassThru | Set-Service -StartupType Disabled
 
   # search
   Get-Service WSearch | Stop-Service | Set-Service -StartupType Disabled
@@ -76,9 +76,10 @@ function setup_disable_features_services {
 
   Get-Service SysMain | Stop-Service | Set-Service -StartupType Disabled
 
-  Get-Service HomeGroupListener,HomeGroupProvider -ErrorAction SilentlyContinue | Stop-Service | Set-Service -StartupType Disabled
+  Get-Service HomeGroupListener,HomeGroupProvider -ErrorAction SilentlyContinue | Stop-Service -PassThru | Set-Service -StartupType Disabled
 
-  Get-Service DiagTrack,Dmwappushservice -ErrorAction SilentlyContinue | Stop-Service | Set-Service -StartupType Disabled
+  Get-Service DiagTrack,Dmwappushservice -ErrorAction SilentlyContinue | Stop-Service -PassThru | Set-Service -StartupType Disabled
+  reg add HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection\ /v AllowTelemetry /t REG_DWORD /d 0 /f | Out-Null
 
   New-Item -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\People" -Force | Out-Null
   Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\People" -Name "PeopleBand" -Type DWord -Value 0 | Out-Null
