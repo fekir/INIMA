@@ -254,6 +254,7 @@ function setup_i_explorer {
 
   # default explorer to computer
   Set-ItemProperty -path $exploreru -Name "LaunchTo" -Type DWord -Value 1 | Out-Null
+  Set-ItemProperty -path $explorerm -Name "LaunchTo" -Type DWord -Value 1 | Out-Null
 
   # change desktop location
   #Set-ItemProperty -path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" -Name Desktop -Type ExpandString -value '%USERPROFILE%' | Out-Null
