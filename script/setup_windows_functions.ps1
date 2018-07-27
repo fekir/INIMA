@@ -12,6 +12,31 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
+function setup_privacy {
+# settings -> privacy -> general -> let apps use my ID ...
+reg add HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\AdvertisingInfo\ /v Enabled /t REG_DWORD /d 0 /f
+reg delete HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\AdvertisingInfo\ /v Id /f
+reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\AdvertisingInfo\ /v Enabled /t REG_DWORD /d 0 /f
+
+# settings -> privacy -> general -> let websites provide locally ...
+reg add "HKCU\Control Panel\International\User Profile\ /v HttpAcceptLanguageOptOut" /t REG_DWORD /d 1 /f
+
+# settings -> privacy -> general -> speech, inking, & typing
+reg add HKCU\SOFTWARE\Microsoft\InputPersonalization\ /v RestrictImplicitTextCollection /t REG_DWORD /d 1 /f
+reg add HKCU\SOFTWARE\Microsoft\InputPersonalization\ /v RestrictImplicitInkCollection /t REG_DWORD /d 1 /f
+reg add HKCU\SOFTWARE\Microsoft\InputPersonalization\TrainedDataStore\ /v HarvestContacts /t REG_DWORD /d 0 /f
+reg add HKCU\SOFTWARE\Microsoft\Personalization\Settings\ /v AcceptedPrivacyPolicy /t REG_DWORD /d 0 /f
+}
+
+function setup_more_privacy {
+#https://www.makeuseof.com/tag/things-windows-can-clear-automatically-shutdown/
+  $memory = "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management"
+  If (!(Test-Path $memory)) {
+    New-Item $memory -Force | Out-Null
+  }
+  Set-ItemProperty -Path $memory -Name "ClearPageFileAtShutdown" -Value 1 | Out-Null
+}
+
 function setup_disable_features_services {
   # Query features
   # dism /Online /Get-Features
