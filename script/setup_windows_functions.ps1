@@ -121,6 +121,10 @@ function setup_remove_universal_apps {
   Set-ItemProperty -Path $explorer -Name "NoUseStoreOpenWith" -Type DWord -Value 1 | Out-Null
 }
 
+function setup_disable_defender_until_reboot {
+  Set-MpPreference -DisableRealtimeMonitoring $true
+}
+
 function setup_disable_defender {
   Set-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\Windows Defender" -Name "DisableAntiSpyware" -Type DWord -Value 1 | Out-Null
 }
