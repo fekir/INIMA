@@ -62,10 +62,12 @@ Supported parameters are:
 	- password: login password/password to set in the `*_base` templates (not supported on windows templates)
 	- username: login username/username to set in the `*_base` templates (not supported on windows templates)
 	- vm_name: name of virtual machine
-	- vmachine: set this value to "linux" or "windows" in order ot load the right guest additions, if empty, not additionas are loaded (saves a lot of time with windows)
+	- vmachine: set this value to "linux" or "windows" in order ot load the right guest additions, if empty, not additions are loaded (saves a lot of time with windows)
 	- packages/choco_packages/cygwin_packages: comma separated list of package to install. Since windows does not have an integrated package manager, use `choco_packages` and `cygwin_packages`
-	- keymap: keymap of the virtual machine, formats are host-specific (for example on GNU/Linux the english keyboard is en, on Windows it's en-US)
-	- locale: locale of the virtual machine, formats are host-specific (no currently supported on windows)
+	- keymap: keymap of the virtual machine, formats are host-specific (for example on GNU/Linux the English keyboard is en, on Windows it's en-US)
+	- locale: locale of the virtual machine, formats are host-specific (not currently supported on windows)
+	- lc_time: time format of the virtual machine, formats are host-specific (not currently supported on Windows)
+	- timezone: timezone of the virtual machine, formats are in the form "area/zone" (host-specific, for example Berlin on Debian is "Europe/Berlin")
 	- cleanup: if at the end of the setup we need to clean as mcuh as possible to reduce space requirements. This passage can be time consuming.
 
 The list might not be complete, and some parameter might be avaiable only on some provisioners/gest OS.

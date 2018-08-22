@@ -91,24 +91,54 @@ setup_de(){
   apt-get --no-install-recommends --assume-yes install pidgin thunderbird >/dev/null
 }
 
+# TIP: change temp keyboard temp from console: "setxkbmap it" (or de, whatever)
+setup_locale(){
+  # setup keymap
+  SETUP_KEYMAP="${SETUP_KEYMAP:-}"
+  if [ -n "$SETUP_KEYMAP" ] ; then
+    sudo sed -i 's/XKBLAYOUT=\"\w*"/XKBLAYOUT=\"'$SETUP_KEYMAP'\"/g' /etc/default/keyboard
+  fi
 
-setup_language(){
-  # set selection before installing, otherwise configuration seems to get lost
-  printf 'localepurge localepurge/nopurge multiselect de, en, it\n' | debconf-set-selections
+  # setup monetary and time format
+  UPDATE_LOCALE_PARAM_TIME=""
+  # change system language, time format, monetary format
+  SETUP_LC_TIME="${SETUP_LC_TIME:-}"
+  if [ -n "$SETUP_LC_TIME" ] ; then
+    sed -i -e "s/^#\s*$SETUP_LC_TIME.UTF-8\s*UTF-8/$SETUP_LC_TIME.UTF-8 UTF-8/g" /etc/locale.gen
+    UPDATE_LOCALE_PARAM_TIME="LC_TIME=$SETUP_LC_TIME.UTF-8"
+  fi
+
+  UPDATE_LOCALE_PARAM_MONETARY=""
+  SETUP_LC_MONETARY="${SETUP_LC_MONETARY:-it_IT}"
+  if [ -n "$SETUP_LC_MONETARY" ] ; then
+    sed -i -e "s/^#\s*$SETUP_LC_MONETARY.UTF-8\s*UTF-8/$SETUP_LC_MONETARY.UTF-8 UTF-8/g" /etc/locale.gen
+    UPDATE_LOCALE_PARAM_MONETARY="LC_MONETARY=$SETUP_LC_MONETARY.UTF-8"
+  fi
+
+  locale-gen
+  update-locale "$UPDATE_LOCALE_PARAM_TIME" "$UPDATE_LOCALE_PARAM_MONETARY"
+
+  # set selection before installing, do not use it for changing existing configuration
+  lang_not_to_purge='de, en, it'
+  printf 'localepurge localepurge/nopurge multiselect %s\n' "$lang_not_to_purge" | debconf-set-selections
   printf 'localepurge localepurge/showfreedspace boolean false' | debconf-set-selections
   DEBIAN_FRONTEND=noninteractive apt-get --no-install-recommends --assume-yes install localepurge >/dev/null
   localepurge
 
-  # should not be part of a minimal installation
+  # FIXME: add dictionaries - probably easier to list packages with the others
   #apt-get --no-install-recommends --assume-yes install hunspell-de-de hunspell-en-us hunspell-it >/dev/null
   #apt-get --no-install-recommends --assume-yes install aspell-de aspell-en aspell-it >/dev/null
 
-  # set locale and keyboard
-
-  # debconf-get-selections | grep keyboard-configuration
-  # debconf-set-selections < file.conf
-  #dpkg-reconfigure keyboard-configuration -f noninteractive
-  # --> did not work
+  # timezone
+  if [ -n "${SETUP_TIMEZONE:-}" ] ; then
+    zone="${SETUP_TIMEZONE#*/}"
+    area="${SETUP_TIMEZONE%?$zone}"
+    mv /etc/timezone /etc/timezone.back
+    mv /etc/localtime /etc/localtime.back
+    printf 'tzdata tzdata/Areas select %s\ntzdata tzdata/Zones/%s select %s\n' "$area" "$area" "$zone" | sudo debconf-set-selections
+    sudo dpkg-reconfigure -f noninteractive tzdata || (mv /etc/timezone.back /etc/timezone; mv /etc/localtime.back /etc/localtime; exit 1)
+    rm /etc/timezone.back /etc/localtime.back
+  fi
 }
 
 setup_vm(){

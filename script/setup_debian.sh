@@ -23,7 +23,7 @@ export DEBIAN_FRONTEND
 
 setup_tmp
 setup_sources
-setup_language
+setup_locale
 
 
 #default settings
