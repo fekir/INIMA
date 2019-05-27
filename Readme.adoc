@@ -107,6 +107,38 @@ Fortunately both unix shells and Microsoft powershell have functions, so all fun
 This way, most of the time, there is no need to speak different languages (shell dialect, packer config files, ...) and wonder how we should adapt the whole infrastructure to our needs.
 Just speak the (power)shell language and look at two files: the one with all functions (they are not that many!) and the main file for calling our functions.
 
+== Other suggestions
+
+=== Compact size of the virtual machine
+
+Give a look at https://kb.vmware.com/s/article/1023856 if you are working with `vmdk` images.
+
+It provides an utility that works both for windows as for linux, defragmenting before compacting can also help:
+
+----
+vdiskmanager -d 'path to vmdk' # defragments image file
+vdiskmanager -k 'path to vmdk' # compacts image file
+----
+
+Otherwise virtualbox is able resize `vmdk` file by converting them to `vdi` and back (it will change the UUID)
+
+----
+VBoxManage clonemedium disk --format VDI 'path to input vmdk' 'path to output vdi'
+VBoxManage modifyhd --compact 'path to vdi'
+VBoxManage clonemedium disk 'path to input vdi'  'path to output vmdk'
+----
+
+While for compressing vdi files with virtualbox work OOB.
+
+
+Both windows and the debian templates have a `cleanup` setting for removing as much data (logs, documentation, temporary files, ...) as possible, and overwrite free space with `\0`.
+Just set the value to `true`, to enable it.
+It is not set by default since it could delete some data useful for a later step, and because overwriting every free byte on the virtual disk is very time and space-consuming.
+Also defragmenting and compaticting virtual images, is generally a time consuming operation.
+Therefore unless an image is going to be used an shared multiple times, probably the saved space is not worth the necessary time, especially for a newly installed operating system.
+
+Also give a look at: http://libguestfs.org/virt-sparsify.1.html
+Zeroing hard rive is a very long operation.
 
 == Known bugs
 
