@@ -538,14 +538,14 @@ function setup_cleanup {
 }
 
 function setup_install_cygwin {
-  # verify 64 or 32 bit
+  # FIXME: verify 64 or 32 bit
   $source = "https://cygwin.com/setup-x86_64.exe"
   $destination = "$env:Temp\setup-x86_64.exe"
   $mirror="http://cygwin.mirror.constant.com"
 
   Invoke-WebRequest $source -OutFile $destination
   # default install
-  & $destination --no-desktop --local-package-dir "$env:Temp" --site $mirror --quiet-mode --packages chere,nano | Out-Null
+  & $destination --no-desktop --local-package-dir "$env:Temp" --site $mirror --quiet-mode --packages chere,nano,vim | Out-Null
   # add packages
   if ( $env:SETUP_CYGWIN_PACKAGES ) {
     & $destination --no-desktop --local-package-dir "$env:Temp" --site $mirror --quiet-mode --packages $env:SETUP_CYGWIN_PACKAGES | Out-Null
@@ -559,6 +559,18 @@ function setup_install_cygwin {
   powershell {
     $env:Path += ";$env:HOMEDRIVE\cygwin64\bin;"
     & "$env:HOMEDRIVE\cygwin64\bin\bash.exe" chere -i -t mintty
+  }
+  # FIXME: make more programmatically
+  Add-MpPreference -ExclusionProcess bash
+  Add-MpPreference -ExclusionProcess zsh
+  Add-MpPreference -ExclusionProcess tmux
+  Add-MpPreference -ExclusionProcess nano
+  Add-MpPreference -ExclusionProcess vim
+  Add-MpPreference -ExclusionProcess mintty
+  Add-MpPreference -ExclusionPath "$env:HOMEDRIVE\cygwin64"
+  if ($SETUP_CHOCO_PACKAGES -like '*git*') {
+    Add-MpPreference -ExclusionProcess tig
+    Add-MpPreference -ExclusionProcess git
   }
 }
 
@@ -599,6 +611,10 @@ function setup_install_choco {
 
   if ($SETUP_CHOCO_PACKAGES -like '*notepadplusplus*') {
     setup_i_conf_npp
+  }
+  if ($SETUP_CHOCO_PACKAGES -like '*git*') {
+    Add-MpPreference -ExclusionProcess tig
+    Add-MpPreference -ExclusionProcess git
   }
 
   # FIXME: check how to change default apps (browser, mail client, ...)
