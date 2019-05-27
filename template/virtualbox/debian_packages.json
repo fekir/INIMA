@@ -10,7 +10,7 @@
 			"http_directory": "{{user `http_directory`}}",
 			"source_path": "{{user `source_path`}}",
 			"post_shutdown_delay": "1m",
-			"shutdown_command": "echo '{{user `password`}}' | sudo -S shutdown -h now",
+			"shutdown_command": "echo '{{user `password`}}' | sudo -S shutdown now",
 			"ssh_password": "{{user `password`}}",
 			"ssh_username": "{{user `username`}}",
 			"ssh_wait_timeout": "10000s",
