@@ -429,10 +429,16 @@ function setup_vm {
 
   if ($env:PACKER_BUILDER_TYPE -like "*virtualbox*") {
     # FIXME: need to find right drive
-    if(test-path E:\ -Filter *.cer){
-      Get-ChildItem E:\cert -Filter *.cer | ForEach-Object { certutil -addstore -f "TrustedPublisher" $_.FullName }
+    $Drives = Get-PSDrive -PSProvider 'FileSystem'
+    foreach($Drive in $drives) {
+      $exec= (Join-Path $Drive.Root "VBoxWindowsAdditions.exe")
+      if (!(Test-Path $exec) ) {
+        continue;
+      }
+      Get-ChildItem (Join-Path $Drive.Root "cert") -Filter *.cer | ForEach-Object { certutil -addstore -f "TrustedPublisher" $_.FullName }
+      Start-Process -FilePath "$exec" -ArgumentList "/S" -Wait
+      break;
     }
-    Start-Process -FilePath "E:\VBoxWindowsAdditions.exe" -ArgumentList "/S" -Wait
   } elseif ($env:PACKER_BUILDER_TYPE -like "*vmware*") {
     $MountResult = Mount-DiskImage -ImagePath "C:/Windows/Temp/vmwaretools.iso" -StorageType ISO -PassThru
     $MountLocation = "$(($MountResult | Get-Volume).DriveLetter):\"
