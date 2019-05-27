@@ -512,15 +512,12 @@ function setup_cleanup {
 
   setup_cleanup_fast
 
-  # disk cleanup
-  #Write-Host "Disk cleanup..."
-  #cleanmgr /sagerun:1 -ErrorAction SilentlyContinue # takes too much time...
+  Write-Host "Disk cleanup..."
+  cleanmgr /sagerun:1 -ErrorAction SilentlyContinue # takes too much time...
 
-  # remove service packs
   Write-Host "remove service packs"
   Dism.exe /online /Cleanup-Image /SPSuperseded /NoRestart
 
-  # reduce winsxs folder
   Write-Host "reduce winsxs folder"
   Dism.exe /online /Cleanup-Image /StartComponentCleanup /ResetBase /NoRestart
 

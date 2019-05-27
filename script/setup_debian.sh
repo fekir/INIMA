@@ -21,6 +21,10 @@ export DEBIAN_FRONTEND
 
 . /tmp/setup_debian_functions.sh
 
+if [ "$SETUP_CLEAN" = "true" ]; then
+  setup_installer_minimal
+fi
+
 setup_tmp
 setup_sources
 setup_locale

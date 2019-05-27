@@ -36,7 +36,29 @@ setup_sources(){
 
   apt-get update >/dev/null
   apt-get --no-install-recommends --assume-yes upgrade >/dev/null
-  apt-get --no-install-recommends --assume-yes --quiet install aptitude >/dev/null
+}
+
+# would be nice to be able to set them from cli instead of creating config files
+setup_installer_minimal(){
+  #https://wiki.ubuntu.com/ReducingDiskFootprint#Documentation
+  {
+    printf 'path-exclude /usr/share/doc/*\n';
+    printf 'path-exclude /usr/share/doc-base/*\n';
+    printf 'path-exclude /usr/share/common-licenses/*\n';
+	# unless redistribuiting the machine, we do not need to keep copyright files
+    #printf 'path-include /usr/share/doc/*/copyright';
+	printf 'path-exclude /usr/share/man/*';
+	printf 'path-exclude /usr/share/man-db/*';
+	printf 'path-exclude /usr/share/groff/*';
+	printf 'path-exclude /usr/share/info/*';
+	printf 'path-exclude /usr/share/lintian/*printf '
+	#printf 'path-exclude /usr/share/locale/*'; # handled by localepurge
+  }>"/etc/dpkg/dpkg.cfg.d/01-no-doc-license-locale"
+
+  {
+    printf 'Acquire::GzipIndexes "true";printf '
+    printf 'Acquire::CompressionTypes::Order:: "gz";printf '
+  }>"/etc/apt/apt.conf.d/00-compress-indexes"
 }
 
 setup_lightdm_autologin(){
@@ -122,7 +144,7 @@ setup_locale(){
   lang_not_to_purge='de, en, it'
   printf 'localepurge localepurge/nopurge multiselect %s\n' "$lang_not_to_purge" | debconf-set-selections
   printf 'localepurge localepurge/showfreedspace boolean false' | debconf-set-selections
-  DEBIAN_FRONTEND=noninteractive apt-get --no-install-recommends --assume-yes install localepurge >/dev/null
+  DEBIAN_FRONTEND=noninteractive apt-get --no-install-recommends --assume-yes install localepurge hardlink>/dev/null
   localepurge
 
   # FIXME: add dictionaries - probably easier to list packages with the others
@@ -182,6 +204,7 @@ setup_tui_tools(){
   apt-get --assume-yes install tmux zsh bash-completion nano htop iotop nmon tree mc dos2unix lynx powerline >/dev/null
 
   apt-get --assume-yes install neovim >/dev/null
+  apt-get --assume-yes remove vim >/dev/null
   update-alternatives --set editor /usr/bin/nvim 2>/dev/null || true
   update-alternatives --set vimdiff /usr/bin/vimdiff.nvim 2>/dev/null || true
   update-alternatives --set vi /usr/bin/nvim 2>/dev/null || true
@@ -230,26 +253,27 @@ setup_cleanup_fast(){
   unset HISTFILE
 
   printf 'clean packages\n'
-  apt-get --assume-yes autoremove --purge >/dev/null
-  apt-get --assume-yes clean >/dev/null
-  apt-get --assume-yes autoclean >/dev/null
-  localepurge || true
+  apt-get --assume-yes autoremove --purge >/dev/null;
+  apt-get --assume-yes clean >/dev/null;
+  apt-get --assume-yes autoclean >/dev/null;
+  dpkg -l | awk '/^rc/ {printf( "%s%c", $2, 0 )}' | xargs --null --no-run-if-empty dpkg --purge;
+  localepurge || true;
 
-  printf 'clean history, error reports and cache\n'
-  rm -f "/root/.*hist*" || true
-  rm -f "/home/$SSH_USERNAME/.*hist*" || true
-  rm -f "/home/$SUDO_USER/.*hist*" || true
-  rm -f "$HOME/.*hist*" || true
+  printf 'clean history, error reports and cache\n';
+  rm -f "/root/.*hist*" || true;
+  rm -f "/home/$SSH_USERNAME/.*hist*" || true;
+  rm -f "/home/$SUDO_USER/.*hist*" || true;
+  rm -f "$HOME/.*hist*" || true;
 
-  rm -f "/root/.xsessions-errors" || true
-  rm -f "/home/$SSH_USERNAME/.xsessions-errors*" || true
-  rm -f "/home/$SUDO_USER/.xsessions-errors*" || true
-  rm -f "$HOME/.xsessions-errors*" || true
+  rm -f "/root/.xsessions-errors" || true;
+  rm -f "/home/$SSH_USERNAME/.xsessions-errors*" || true;
+  rm -f "/home/$SUDO_USER/.xsessions-errors*" || true;
+  rm -f "$HOME/.xsessions-errors*" || true;
 
-  rm -rf "/root/.cache" || true
-  rm -rf "/home/$SSH_USERNAME/.cache*" || true
-  rm -rf "/home/$SUDO_USER/.cache*" || true
-  rm -rf "$HOME/.cache" || true
+  rm -rf "/root/.cache" || true;
+  rm -rf "/home/$SSH_USERNAME/.cache*" || true;
+  rm -rf "/home/$SUDO_USER/.cache*" || true;
+  rm -rf "$HOME/.cache" || true;
 
   printf 'Stop common services that may log and clean all logs\n'
   service crond stop >/dev/null 2>/dev/null || true
@@ -263,20 +287,64 @@ setup_cleanup_fast(){
   find /var/log -type f | while read -r f; do cat /dev/null > "$f"; done;
 
 
-  printf 'Remove temporary files\n' # should be done at the end to avoid breaking running programs as much as possible
-  rm -rf "/tmp/*" || true
-  rm -rf "/var/tmp/*"  || true
-
+  printf 'Remove temporary files\n'; # should be done at the end to avoid breaking running programs as much as possible
+  rm -rf "/tmp/*" || true;
+  rm -rf "/var/tmp/*" || true;
+  rm -rf "/var/lib/apt/lists/" || true;
+  #find /var/lib/apt/lists -type f -exec rm {} \;
+  rm -rf "/var/cache" || true;
+  mkdir -p "/var/cache/apt/archives/partial";
 }
 
 setup_cleanup(){
-  #apt-get --no-install-recommends --assume-yes -q install zerofree >/dev/null
+  #apt-get --no-install-recommends --assume-yes -q install zerofree hardlink>/dev/null
   setup_cleanup_fast
   #telinit 1
   #mount -o ro,remount /
   #zerofree -v /
 
-  # FIXME: should list all partitions
-  dd if=/dev/zero of=/EMPTY bs=1M  || true
-  rm -f /EMPTY
+  # FIXME:
+  # * should do on all partitions
+  #   https://unix.stackexchange.com/questions/24182/how-to-get-the-complete-and-exact-list-of-mounted-filesystems-in-linux
+  # * does not overwrite everything
+  # * is very slow, try zerofree again (https://sitano.github.io/2014/08/12/upd-vagrant-box/)
+  cat /dev/zero>/EMPTY || true;
+  sync;
+  rm -f /EMPTY;
+}
+
+setup_cleanup_aggressive(){
+  setup_cleanup_fast
+
+  # will also remove copyright, you'll probably be unable to redistribute the installed debian distribution
+  printf "aggressive removal of data\n"
+  rm -f "/etc/dpkg/dpkg.cfg.d/01-no-doc-license-locale"; # might make sense to leave...
+  rm -f "/etc/apt/apt.conf.d/00-compress-indexes"; # created by us, seems to slow down some programs, so it OK to not set it by default
+
+  rm -rf /usr/local/share/man/;
+
+  # locale should be already handled by localepurge
+  #rm -rf /usr/share/locale/ check effetive size, and check localepurge
+  #find /usr/share/i18n/locales ! -name 'C' -type f -exec rm {} +
+  rm -rf /usr/share/bug/;
+  rm -rf /usr/share/common-licenses/;
+  rm -rf /usr/share/doc/;
+  rm -rf /usr/share/doc-base/;
+  find /usr/share -type d -name doc  -exec rm -rf {} +;
+  rm -rf /usr/share/gtk-doc;
+  find /usr/share -type d -name help -exec rm -rf {} +;
+  rm -rf /usr/share/lintian/;
+  rm -rf /usr/share/man/;
+  rm -rf /usr/share/man-db/;
+  find /usr/share -type d -name man  -exec rm -rf {} +;
+  # removing entirely causes issues.. would be nice if there is something like localepurge for it... hardlink did not make any difference
+  #rm -rf /usr/share/zoneinfo/;
+
+  hardlink /usr/share/; # might break something when upgrading, but when there be dragons when removing/"editing" data from /usr/share 
+
+  rm -rf /var/lib/apt/lists/;
+
+  # those needs testing
+  #rm -rf /var/lib/dpkg/info;
+  #mkdir -p /var/lib/dpkg/info; # when installing package, dpkg complains... not nice
 }
