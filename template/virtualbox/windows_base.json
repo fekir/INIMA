@@ -54,10 +54,13 @@
 			"pause_before": "10s",
 			"environment_vars": [
 				"SETUP_VMACHINE={{user `vmachine`}}",
-				"SETUP_KEYMAP={{user `keymap`}}",
 				"SETUP_CHOCO_PACKAGES={{user `choco_packages`}}",
 				"SETUP_CYGWIN_PACKAGES={{user `cygwin_packages`}}",
-				"SETUP_CLEAN={{user `cleanup`}}"
+				"SETUP_CLEAN={{user `cleanup`}}",
+				"SETUP_LOCALE={{user `locale`}}",
+				"SETUP_KEYMAP={{user `keymap`}}",
+				"SETUP_TIMEZONE={{user `timezone`}}",
+				"SETUP_LC_TIME={{user `lc_time`}}"
 			],
 			"scripts": [
 				"./script/setup_windows.ps1"
@@ -72,8 +75,6 @@
 		"headless": "true",
 		"iso_checksum": "62d4ca811bc3ded0e196e1baf92964212c572503",
 		"iso_checksum_type": "sha1",
-		"iso_name": "en_windows_10_consumer_edition_version_1803_updated_april_2019_x64_dvd_62bc11eb.iso",
-		"iso_path": "./iso",
 		"iso_url": "./iso/en_windows_10_consumer_edition_version_1803_updated_april_2019_x64_dvd_62bc11eb.iso",
 		"preseed": "./bootstrap/Autounattend.xml",
 		"password": "vagrant",
@@ -82,7 +83,9 @@
 		"vm_name": "windows",
 		"guest_os_type": "Windows10_64",
 		"locale": "en_US",
+		"lc_time": "",
 		"keymap": "en-US",
+		"timezone": "",
 		"vmachine": "",
 		"choco_packages": "",
 		"cygwin_packages": "",

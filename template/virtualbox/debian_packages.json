@@ -79,7 +79,7 @@
 		"timezone": "Europe/Berlin",
 		"vmachine": "linux",
 		"packages": "neomutt,neovim",
-		"de": "",
+		"de": "mate",
 		"cleanup": ""
 	}
 }

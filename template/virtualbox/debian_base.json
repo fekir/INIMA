@@ -62,6 +62,7 @@
 			"pause_before": "5s",
 			"expect_disconnect": "true",
 			"environment_vars": [
+				"SETUP_DE={{user `de`}}",
 				"SETUP_VMACHINE={{user `vmachine`}}",
 				"SETUP_PACKAGES={{user `packages`}}",
 				"SETUP_CLEAN={{user `cleanup`}}",
@@ -108,9 +109,10 @@
 		"locale": "en_US",
 		"lc_time": "en_DK",
 		"keymap": "en",
-		"timezone": "",
+		"timezone": "Europe/Berlin",
 		"vmachine": "",
 		"packages": "",
+		"de": "",
 		"cleanup": ""
 	}
 }

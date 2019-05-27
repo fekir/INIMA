@@ -30,11 +30,13 @@
 			"iso_urls": [
 				"{{user `iso_url`}}"
 			],
-			"shutdown_command": "echo '{{user `password`}}' | sudo -S shutdown -h now",
+			"shutdown_command": "echo '{{user `password`}}' | sudo -S shutdown now",
 			"ssh_password": "{{user `password`}}",
 			"ssh_username": "{{user `username`}}",
 			"ssh_wait_timeout": "10000s",
 			"vmx_data": {
+				"scsi0.virtualDev": "lsisas1068",
+				"virtualhw.version" : "11",
 				"memsize": "{{user `memory`}}",
 				"numvcpus": "{{user `cpus`}}"
 			}
@@ -51,9 +53,14 @@
 			"pause_before": "5s",
 			"expect_disconnect": "true",
 			"environment_vars": [
+				"SETUP_DE={{user `de`}}",
 				"SETUP_VMACHINE={{user `vmachine`}}",
 				"SETUP_PACKAGES={{user `packages`}}",
 				"SETUP_CLEAN={{user `cleanup`}}",
+				"SETUP_LOCALE={{user `locale`}}",
+				"SETUP_KEYMAP={{user `keymap`}}",
+				"SETUP_TIMEZONE={{user `timezone`}}",
+				"SETUP_LC_TIME={{user `lc_time`}}",
 				"SSH_USERNAME={{user `username`}}",
 				"SSH_PASSWORD={{user `password`}}",
 				"http_proxy={{user `http_proxy`}}",
@@ -89,11 +96,14 @@
 		"username": "debianuser",
 		"version": "0.1.0",
 		"vm_name": "debian",
-		"guest_os_type": "debian9-64",
+		"guest_os_type": "debian8-64",
 		"locale": "en_US",
+		"lc_time": "en_DK",
 		"keymap": "en",
+		"timezone": "Europe/Berlin",
 		"vmachine": "",
 		"packages": "",
+		"de": "",
 		"cleanup": ""
 	}
 }

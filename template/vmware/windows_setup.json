@@ -34,10 +34,13 @@
 			"pause_before": "10s",
 			"environment_vars": [
 				"SETUP_VMACHINE={{user `vmachine`}}",
-				"SETUP_KEYMAP={{user `keymap`}}",
 				"SETUP_CHOCO_PACKAGES={{user `choco_packages`}}",
 				"SETUP_CYGWIN_PACKAGES={{user `cygwin_packages`}}",
-				"SETUP_CLEAN={{user `cleanup`}}"
+				"SETUP_CLEAN={{user `cleanup`}}",
+				"SETUP_LOCALE={{user `locale`}}",
+				"SETUP_KEYMAP={{user `keymap`}}",
+				"SETUP_TIMEZONE={{user `timezone`}}",
+				"SETUP_LC_TIME={{user `lc_time`}}",
 			],
 			"scripts": [
 				"./script/setup_windows.ps1"
@@ -55,9 +58,11 @@
 		"version": "0.1.0",
 		"vm_name": "windows",
 		"locale": "en_US",
+		"lc_time": "",
 		"keymap": "en-US",
+		"timezone": "",
 		"vmachine": "windows",
-		"choco_packages": "7zip,irfanview,nano,notepadplusplus,sysinternals,sumatrapdf.install",
+		"choco_packages": "7zip,notepadplusplus,sysinternals,irfanview,nano,sumatrapdf.install",
 		"cygwin_packages": "chere,zsh,wget,nano,tmux,mc,bash-completion,tree",
 		"cleanup": "no_universal_apps"
 	}
