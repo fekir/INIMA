@@ -146,7 +146,6 @@ setup_vm(){
 
   SSH_USERNAME=${SSH_USERNAME:-vagrant}
 
-
   if [ "${PACKER_BUILDER_TYPE#virtualbox}" != "$PACKER_BUILDER_TYPE" ]; then
     apt-get install --no-install-recommends --assume-yes "linux-headers-$(uname -r)" build-essential perl >/dev/null
     apt-get install --no-install-recommends --assume-yes dkms >/dev/null
@@ -162,6 +161,9 @@ setup_vm(){
     #/tmp/vmware-tools-distrib/vmware-install.pl --default
     #rm -rf "/tmp/vmware-tools-distrib"
     apt-get --assume-yes install open-vm-tools # recomended by VMwareTool installer
+    if [ -n "${SETUP_DE:-}" ] ; then :;
+      apt-get --assume-yes install open-vm-tools-desktop # recomended by VMwareTool installer
+    fi
   fi
 
   # disable hibernation

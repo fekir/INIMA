@@ -31,17 +31,17 @@ SETUP_VMACHINE="${SETUP_VMACHINE:-false}"
 SETUP_PACKAGES="${SETUP_PACKAGES:-}"
 SETUP_CLEAN="${SETUP_CLEAN:-false}"
 
-if [ "$SETUP_VMACHINE" != "false" ]; then
-  setup_vm
-  setup_disable_sudo_pwd
-fi
-
 if [ -n "${SETUP_DE:-}" ] ; then
   setup_de
   if [ "$SETUP_VMACHINE" != "false" ]; then
     setup_lightdm_autologin
   fi
   setup_tui_tools
+fi
+
+if [ "$SETUP_VMACHINE" != "false" ]; then
+  setup_vm
+  setup_disable_sudo_pwd
 fi
 
 if [ -n "${SETUP_PACKAGES:-}" ]; then
