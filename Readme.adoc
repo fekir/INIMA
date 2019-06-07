@@ -148,9 +148,9 @@ If you get a error like
 Then it is a known issue (see https://github.com/hashicorp/packer/issues/4885)
 A possible solution is to edit the `.vmx` file and replace the line `ide0:0.filename = "auto detect"` with `ide0:0.autodetect = "true"`, something like
 
-````
+----
 sed -i 's/^ide0:0.filename[[:space:]]*=[[:space:]]*\"auto detect\"/ide0:0.autodetect = \"true\"/' <vmx file>
-````
+----
 
 should do the job.
 
