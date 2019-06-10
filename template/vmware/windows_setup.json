@@ -40,7 +40,7 @@
 				"SETUP_LOCALE={{user `locale`}}",
 				"SETUP_KEYMAP={{user `keymap`}}",
 				"SETUP_TIMEZONE={{user `timezone`}}",
-				"SETUP_LC_TIME={{user `lc_time`}}",
+				"SETUP_LC_TIME={{user `lc_time`}}"
 			],
 			"scripts": [
 				"./script/setup_windows.ps1"
@@ -53,8 +53,8 @@
 		"vram": "32",
 		"headless": "true",
 		"source_path": "out/vmware/windows_base/windows.vmx",
-		"password": "vagrant",
-		"username": "vagrant",
+		"password": "123456",
+		"username": "admin",
 		"version": "0.1.0",
 		"vm_name": "windows",
 		"locale": "en_US",
