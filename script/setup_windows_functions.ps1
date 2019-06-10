@@ -575,29 +575,55 @@ function setup_install_cygwin {
 # and add shortcut for run command
 # FIXME: change npp as default for txt, ini and other files already associated with notepad
 function setup_i_conf_npp {
-  $registryPath = "Registry::HKEY_CLASSES_ROOT\Unknown\shell"
-  If (!(Test-Path $registryPath)) {
-    New-Item $registryPath -Force| Out-Null
-  }
-  Set-ItemProperty -Path $registryPath -name '(Default)' -Value "notepad" | Out-Null
+  $editor = "`"C:\Program Files\Notepad++\notepad++.exe`""
+  # $editor = "`"C:\Program Files (x86)\Vim\vim81\gvim.exe`""
 
-  $registryPath = "Registry::HKEY_CLASSES_ROOT\Unknown\shell\notepad"
-  If (!(Test-Path $registryPath)) {
-    New-Item $registryPath -Force| Out-Null
+  # register and set editor for unknown files
+  $key = "Registry::HKEY_CLASSES_ROOT\Unknown\shell"
+  If (!(Test-Path $key)) {
+    New-Item "$key" -Force | Out-Null
   }
-  Set-ItemProperty -Path $registryPath -name '(Default)' -Value "Open with Notepad++" | Out-Null
+  Set-ItemProperty -Path "$key" -name '(Default)' -Value "editor"
 
-  $registryPath = "Registry::HKEY_CLASSES_ROOT\Unknown\shell\notepad\command"
-  If (!(Test-Path $registryPath)) {
-    New-Item $registryPath -Force| Out-Null
+  $key = "Registry::HKEY_CLASSES_ROOT\Unknown\shell\editor\command"
+  If (!(Test-Path $key)) {
+    New-Item "$key" -Force | Out-Null
   }
-  Set-ItemProperty -Path $registryPath  -name '(Default)' -Value "C:\Program Files\Notepad++\notepad++.exe %1" | Out-Null
+  Set-ItemProperty -Path "$key" -name '(Default)' -Value "$editor `"%1`""
 
-  $registryPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\npp.exe"
-  If (!(Test-Path $registryPath)) {
-    New-Item $registryPath -Force| Out-Null
+  # register editor for known textual files
+  $key = "Registry::HKEY_CLASSES_ROOT\Unknown\shell\Open\command"
+  If (!(Test-Path $key)) {
+    New-Item "$key" -Force | Out-Null
   }
-  Set-ItemProperty -Path $registryPath  -name '(Default)' -Value "C:\Program Files\Notepad++\notepad++.exe" | Out-Null
+  Set-ItemProperty -Path "$key" -name '(Default)' -Value "$editor `"%1`""
+
+  # set default editor for already known extual files
+  $filetypes = @("txtfile", "inifile", "xmlfile")
+  foreach ($filetype in $filetypes) {
+    $key = (Join-Path (Join-Path Registry::HKEY_CLASSES_ROOT $filetype) shell\open\command)
+    If (!(Test-Path $key)) {
+      New-Item "$key" -Force | Out-Null
+    }
+    Set-ItemProperty -Path "$key" -name '(Default)' -Value "$editor `"%1`""
+  }
+
+
+  # notepad++ alreay adds an entry in explorer right click
+  ## apparently "*" gets expanded, and "`*" does not escape..., thus use a different syntax
+  #$key = (get-item Registry::HKEY_CLASSES_ROOT).CreateSubKey("*\shell\Open with text editor\command")
+  #$key.SetValue('', "$editor `"%1`"");
+
+  ## in case there is a nice icon
+  #$key = (get-item Registry::HKEY_CLASSES_ROOT).OpenSubKey("*\shell\Open with text editor", $true)
+  #$key.SetValue('Icon', "$editor");
+
+
+  $key = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\editor.exe"
+  If (!(Test-Path $key)) {
+    New-Item "$key" -Force | Out-Null
+  }
+  Set-ItemProperty -Path "$key" -name '(Default)' -Value "$editor"
 }
 
 function setup_install_choco {
@@ -606,10 +632,10 @@ function setup_install_choco {
 
   cinst $env:SETUP_CHOCO_PACKAGES.split(",") --yes --limit-output --no-progress
 
-  if ($SETUP_CHOCO_PACKAGES -like '*notepadplusplus*') {
+  if ($env:SETUP_CHOCO_PACKAGES -like '*notepadplusplus*') {
     setup_i_conf_npp
   }
-  if ($SETUP_CHOCO_PACKAGES -like '*git*') {
+  if ($env:SETUP_CHOCO_PACKAGES -like '*git*') {
     Add-MpPreference -ExclusionProcess tig
     Add-MpPreference -ExclusionProcess git
   }
