@@ -31,9 +31,10 @@
 				[ "modifyvm", "{{.Name}}", "--memory", "{{user `memory`}}" ],
 				[ "modifyvm", "{{.Name}}", "--cpus", "{{user `cpus`}}" ],
 				[ "modifyvm", "{{.Name}}", "--vram", "{{ user `vram` }}" ],
-				[ "modifyvm", "{{.Name}}", "--clipboard", "bidirectional" ],
+				[ "modifyvm", "{{.Name}}", "--clipboard-mode", "bidirectional" ],
 				[ "modifyvm", "{{.Name}}", "--draganddrop", "bidirectional" ],
 				[ "modifyvm", "{{.Name}}", "--usb", "on" ],
+				[ "modifyvm", "{{.Name}}", "--graphicscontroller", "vboxsvga" ],
 				[ "modifyvm", "{{.Name}}", "--audio" ,"none"]
 			],
 			"vboxmanage_post": [
