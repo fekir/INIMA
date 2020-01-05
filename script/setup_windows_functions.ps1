@@ -58,7 +58,6 @@ function setup_disable_features_services {
   # disable media player
   Get-Service WMPNetworkSvc -ErrorAction SilentlyContinue | Stop-Service -PassThru | Set-Service -StartupType Disabled
 
-
   #diagnostic
   Get-Service diagnosticshub.standardcollector.service,DiagTrack -ErrorAction SilentlyContinue | Stop-Service -PassThru | Set-Service -StartupType Disabled
 
@@ -443,8 +442,8 @@ function setup_rm_desktop_links
 {
   # cannot add | Out-Null or result is empty
   $files = Get-ChildItem "$env:SYSTEMDRIVE\Users\*\Desktop\*" -filter "*.lnk" -force
-  for ($i=0; $i -lt $files.Count; $i++) {
-    rm $files[$i].FullName -ErrorAction SilentlyContinue
+  foreach ($link in $files) {
+    Remove-Item $link.FullName -Force -ErrorAction SilentlyContinue | Out-Null
   }
 }
 
@@ -468,8 +467,13 @@ function setup_rm_tmp_files {
   $tmps +=    "$env:LocalAppData\Microsoft\Windows\Explorer\*cache*.db"
   $tmps += "$users\AppData\Local\Microsoft\Windows\Explorer\*cache*.db"
 
+  $tmps += "$env:SYSTEMROOT\Logs\*"
+  $tmps += "$env:SYSTEMROOT\Prefetch\*"
+
   $tmps += "$env:USERPROFILE\MicrosoftEdgeBackups"
   $tmps +=           "$users\MicrosoftEdgeBackups"
+
+  $tmps += "$env:ProgramData\chocolatey\logs\*"
 
   foreach($tmp in $tmps) {
     Remove-Item -Recurse $tmp -Force -ErrorAction SilentlyContinue | Out-Null
@@ -519,6 +523,7 @@ function setup_zero_drive {
 }
 
 function setup_cleanup {
+  Get-Service -Name wuauserv | Stop-Service -Force -ErrorAction SilentlyContinue
   setup_clean_remove_onedrive
 
   setup_cleanup_fast
@@ -548,15 +553,15 @@ function setup_cleanup {
 function setup_install_cygwin {
   # FIXME: verify 64 or 32 bit
   $source = "https://cygwin.com/setup-x86_64.exe"
-  $destination = "$env:Temp\setup-x86_64.exe"
+  $destination = "$env:TEMP\setup-x86_64.exe"
   $mirror="http://cygwin.mirror.constant.com"
 
   Invoke-WebRequest $source -OutFile $destination
   # default install
-  & $destination --no-desktop --local-package-dir "$env:Temp" --site $mirror --quiet-mode --packages chere,nano,vim | Out-Null
+  & $destination --no-desktop --local-package-dir "$env:TEMP" --site $mirror --quiet-mode --packages chere,nano,vim | Out-Null
   # add packages
   if ( $env:SETUP_CYGWIN_PACKAGES ) {
-    & $destination --no-desktop --local-package-dir "$env:Temp" --site $mirror --quiet-mode --packages $env:SETUP_CYGWIN_PACKAGES | Out-Null
+    & $destination --no-desktop --local-package-dir "$env:TEMP" --site $mirror --quiet-mode --packages $env:SETUP_CYGWIN_PACKAGES | Out-Null
   }
 
   Add-Content "$env:SYSTEMDRIVE\cygwin64\etc\nsswitch.conf" "`n"
