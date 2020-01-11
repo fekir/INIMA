@@ -460,16 +460,43 @@ function setup_rm_desktop_links
 }
 
 function setup_rm_tmp_files {
-  Remove-Item -Recurse "$env:temp\*" -Force -ErrorAction SilentlyContinue | Out-Null
-  Remove-Item -Recurse "$env:HOMEDRIVE\Windows\Temp\*" -Force -ErrorAction SilentlyContinue | Out-Null
-  Remove-Item -Recurse "$env:USERPROFILE\AppData\Local\Temp\*" -Force -ErrorAction SilentlyContinue
-  Remove-Item -Recurse "$env:HOMEDRIVE\Users\*\AppData\Local\Temp\*" -Force -ErrorAction SilentlyContinue | Out-Null
-  Remove-Item -Recurse "$env:USERPROFILE\AppData\Local\Microsoft\Windows\WebCache\*" -Force -ErrorAction SilentlyContinue| Out-Null
-  Remove-Item -Recurse "$env:HOMEDRIVE\Users\*\AppData\Local\Microsoft\Windows\WebCache\*" -Force -ErrorAction SilentlyContinue| Out-Null
-  Remove-Item -Recurse "$env:HOMEDRIVE\cygwin\tmp\*" -Force -ErrorAction SilentlyContinue | Out-Null
-  Remove-Item -Recurse "$env:HOMEDRIVE\cygwin64\tmp\*" -Force -ErrorAction SilentlyContinue | Out-Null
-  Remove-Item -Recurse "$env:USERPROFILE\MicrosoftEdgeBackups" -Force -ErrorAction SilentlyContinue
-  Remove-Item -Recurse "$env:HOMEDRIVE\Users\*\MicrosoftEdgeBackups" -Force -ErrorAction SilentlyContinue | Out-Null
+  $tmps = @()
+  $tmps += "$env:TEMP\*"
+  $tmps += "$env:SYSTEMROOT\Temp\*"
+  $tmps += "$env:SYSTEMROOT\SoftwareDistribution\*"
+  $tmps += "$env:SYSTEMDRIVE\inetpub\logs\LogFiles\*"
+  $tmps += "$env:SYSTEMDRIVE\cygwin\tmp\*"
+  $tmps += "$env:SYSTEMDRIVE\cygwin64\tmp\*"
+
+  $users = "$env:SYSTEMDRIVE\Users\*"
+
+  $tmps +=    "$env:LocalAppData\Temp\*"
+  $tmps += "$users\AppData\Local\Temp\*"
+  $tmps +=    "$env:LocalAppData\Microsoft\Windows\WebCache\*"
+  $tmps += "$users\AppData\Local\Microsoft\Windows\WebCache\*"
+  $tmps +=    "$env:LocalAppData\Microsoft\Windows\Temporary Internet Files\*"
+  $tmps += "$users\AppData\Local\Microsoft\Windows\Temporary Internet Files\*"
+  $tmps +=    "$env:LocalAppData\Microsoft\Windows\Explorer\*cache*.db"
+  $tmps += "$users\AppData\Local\Microsoft\Windows\Explorer\*cache*.db"
+
+  $tmps += "$env:USERPROFILE\MicrosoftEdgeBackups"
+  $tmps +=           "$users\MicrosoftEdgeBackups"
+
+  foreach($tmp in $tmps) {
+    Remove-Item -Recurse $tmp -Force -ErrorAction SilentlyContinue | Out-Null
+  }
+
+  # after first rm, to avoid listing files more than once
+  $drives = get-wmiobject Win32_LogicalDisk | ? {$_.drivetype -eq 3} | % {get-psdrive $_.deviceid[0]}
+  foreach ($drive in $drives) {
+    $tmps = Get-ChildItem $drive.Root -Force -Recurse -ErrorAction SilentlyContinue | Where-Object {
+      ($_.PSIsContainer -eq $true -and ($_.Name -eq "__pycache__" -or $_.Name -eq "cache")) -or
+      ($_.PSIsContainer -eq $false -and $_.Name -eq "Thumbs.db")
+    } | % { $_.FullName }
+    foreach($tmp in $tmps) {
+      Remove-Item -Recurse $tmp -Force -ErrorAction SilentlyContinue | Out-Null
+    }
+  }
 }
 
 function setup_cleanup_fast {
