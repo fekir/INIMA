@@ -54,6 +54,8 @@ function setup_disable_features_services {
   dism /Online /Disable-Feature /FeatureName:"LegacyComponents" /NoRestart | Out-Null
 
   # disable media player
+  Get-Service WMPNetworkSvc -ErrorAction SilentlyContinue | Stop-Service -PassThru | Set-Service -StartupType Disabled
+
   dism /Online /Disable-Feature /FeatureName:"DirectPlay" /NoRestart | Out-Null
   dism /Online /Disable-Feature /FeatureName:"MediaPlayback" /NoRestart | Out-Null
   dism /Online /Disable-Feature /FeatureName:"MediaCenter" /NoRestart | Out-Null
@@ -72,26 +74,46 @@ function setup_disable_features_services {
   dism /Online /Disable-Feature /FeatureName:"WindowsGadgetPlatform" /NoRestart | Out-Null
   dism /Online /Disable-Feature /FeatureName:"FaxServicesClientPackage" /NoRestart | Out-Null
 
-  # xbox
-  Get-Service XblAuthManager,XblGameSave,XboxNetApiSvc -ErrorAction SilentlyContinue | Stop-Service -PassThru | Set-Service -StartupType Disabled
+  #diagnostic
+  Get-Service diagnosticshub.standardcollector.service,DiagTrack -ErrorAction SilentlyContinue | Stop-Service -PassThru | Set-Service -StartupType Disabled
+
+  # Geo services
+  Get-Service lfsvc,MapsBroker -ErrorAction SilentlyContinue | Stop-Service -PassThru | Set-Service -StartupType Disabled
 
   # search
-  Get-Service WSearch | Stop-Service | Set-Service -StartupType Disabled
-  Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" -Name "AllowCortana" -Value 0 | Out-Null
-  Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" -Name "DisableWebSearch" -Value 1 | Out-Null
+  Get-Service WSearch -ErrorAction SilentlyContinue | Stop-Service -PassThru | Set-Service -StartupType Disabled
+  $wsearchsettings = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search"
+  CondNewItem $wsearchsettings | Out-Null
+  Set-ItemProperty -Path $wsearchsettings -Name "AllowCortana" -Value 0 | Out-Null
+  Set-ItemProperty -Path $wsearchsettings -Name "ConnectedSearchUseWeb" -Value 1 | Out-Null
+  Set-ItemProperty -Path $wsearchsettings -Name "ConnectedSearchUseWebOverMeteredCOnnections" -Value 1 | Out-Null
+  Set-ItemProperty -Path $wsearchsettings -Name "DisableWebSearch" -Value 1 | Out-Null
 
-  Get-Service SysMain | Stop-Service | Set-Service -StartupType Disabled
+
+  $wsearchsettings = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search"
+  CondNewItem $wsearchsettings | Out-Null
+  New-ItemProperty "$wsearchsettings" -Name "AllowSearchtToUseLocation " -Value 0 -Type DWORD -Force -ErrorAction SilentlyContinue | Out-Null
+  New-ItemProperty "$wsearchsettings" -Name "BingSearchEnabled" -Value 0 -Type DWORD -Force -ErrorAction SilentlyContinue | Out-Null
+  New-ItemProperty "$wsearchsettings" -Name "CortanaConstent" -Value 0 -Type DWORD -Force -ErrorAction SilentlyContinue | Out-Null
+
+  Get-Service SysMain -ErrorAction SilentlyContinue | Stop-Service -PassThru | Set-Service -StartupType Disabled
 
   Get-Service HomeGroupListener,HomeGroupProvider -ErrorAction SilentlyContinue | Stop-Service -PassThru | Set-Service -StartupType Disabled
 
-  Get-Service DiagTrack,Dmwappushservice -ErrorAction SilentlyContinue | Stop-Service -PassThru | Set-Service -StartupType Disabled
-  reg add HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection\ /v AllowTelemetry /t REG_DWORD /d 0 /f | Out-Null
+  # diagnostic
+  Get-Service Dmwappushservice -ErrorAction SilentlyContinue | Stop-Service -PassThru | Set-Service -StartupType Disabled
+  New-ItemProperty  "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection" -Name AllowTelemetry -Type DWORD -Value 0 -Force -ErrorAction SilentlyContinue | Out-Null
+  New-ItemProperty  "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Policies\DataCollection" -Name AllowTelemetry -Type DWORD -Value 0 -Force -ErrorAction SilentlyContinue | Out-Null
 
-  New-Item -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\People" -Force | Out-Null
+  $people="HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\People"
+  CondNewItem $people | Out-Null
   Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\People" -Name "PeopleBand" -Type DWord -Value 0 | Out-Null
 
-
-  Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\GameDVR" -Name "AppCaptureEnabled" -Type DWord -Value 0 | Out-Null
+# xbox, games
+  Get-Service XblAuthManager,XblGameSave,XboxNetApiSvc -ErrorAction SilentlyContinue | Stop-Service -PassThru | Set-Service -StartupType Disabled
+  $gamedvr = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\GameDVR"
+  CondNewItem $gamedvr | Out-Null
+  Set-ItemProperty -Path $gamedvr -Name "AppCaptureEnabled" -Type DWord -Value 0 | Out-Null
   Set-ItemProperty -Path "HKCU:\System\GameConfigStore" -Name "GameDVR_Enabled" -Type DWord -Value 0 | Out-Null
 }
 
@@ -385,10 +407,10 @@ function setup_vm {
   powercfg /SETACVALUEINDEX SCHEME_CURRENT SUB_NONE CONSOLELOCK 0
 
   disable-computerrestore -drive "$env:SYSTEMDRIVE\"
-  # check how to disable wifi
 
-  Stop-Service "Power" -ErrorAction SilentlyContinue
-  Set-Service  "Power" -StartupType disabled
+  # Power,ndu service cannot be stopped, but can be disabled!
+  Get-Service WlanSvc,WbioSrvc -ErrorAction SilentlyContinue | Stop-Service -PassThru | Set-Service -StartupType Disabled
+  Get-Service Power,ndu | Set-Service -StartupType Disabled
 
   # disable locking with <Win>+l
   $registryPath = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
