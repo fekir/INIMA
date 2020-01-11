@@ -12,6 +12,14 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
+function CondNewItem([string] $item) {
+  # avoid creating unconditionally with -Force, as it will delete the content
+  # use -Force to create folders recursively
+  If (!(Test-Path $item)) {
+    New-Item -Force $item
+  }
+}
+
 function setup_privacy {
 # settings -> privacy -> general -> let apps use my ID ...
 reg add HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\AdvertisingInfo\ /v Enabled /t REG_DWORD /d 0 /f
@@ -31,9 +39,7 @@ reg add HKCU\SOFTWARE\Microsoft\Personalization\Settings\ /v AcceptedPrivacyPoli
 function setup_more_privacy {
 #https://www.makeuseof.com/tag/things-windows-can-clear-automatically-shutdown/
   $memory = "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management"
-  If (!(Test-Path $memory)) {
-    New-Item $memory -Force | Out-Null
-  }
+  CondNewItem $memory | Out-Null
   Set-ItemProperty -Path $memory -Name "ClearPageFileAtShutdown" -Value 1 | Out-Null
 }
 
@@ -122,9 +128,7 @@ function setup_remove_universal_apps {
 
   # various ads...
   $contentdelivery = "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager"
-  If (!(Test-Path $contentdelivery)) {
-    New-Item $contentdelivery -Force | Out-Null
-  }
+  CondNewItem $contentdelivery | Out-Null
   Set-ItemProperty -Path $contentdelivery -Name "SilentInstalledAppsEnabled" -Type DWord -Value 0 | Out-Null
   Set-ItemProperty -Path $contentdelivery -Name "SystemPaneSuggestionsEnabled" -Type DWord -Value 0 | Out-Null
   Set-ItemProperty -Path $contentdelivery -Name "ShowSyncProviderNotifications" -Type DWord -Value 0 | Out-Null
@@ -134,16 +138,12 @@ function setup_remove_universal_apps {
   Set-ItemProperty -Path $contentdelivery -Name "SubscribedContent-310093Enabled" -Type DWord -Value 0 | Out-Null
 
   $advanced = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
-  If (!(Test-Path $advanced)) {
-    New-Item $advanced -Force | Out-Null
-  }
+  CondNewItem $advanced | Out-Null
   Set-ItemProperty -Path $advanced -Name "ShowSyncProviderNotifications" -Type DWord -Value 0 | Out-Null
 
   # hide windows store suggestion
   $explorer = "HKLM:\Software\Policies\Microsoft\Windows\Explorer"
-    If (!(Test-Path $explorer)) {
-    New-Item $explorer -Force | Out-Null
-  }
+  CondNewItem $explorer | Out-Null
   Set-ItemProperty -Path $explorer -Name "NoUseStoreOpenWith" -Type DWord -Value 1 | Out-Null
 }
 
@@ -157,9 +157,7 @@ function setup_disable_defender {
 
 function setup_i_desktop_icons {
   $registryPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel"
-  If (!(Test-Path $registryPath)) {
-    New-Item $registryPath -Force | Out-Null
-  }
+  CondNewItem $registryPath | Out-Null
   # Computer
   Set-ItemProperty -Path $registryPath -Name "{20D04FE0-3AEA-1069-A2D8-08002B30309D}" -Type DWord -Value 0 | Out-Null
   # User Files
@@ -226,22 +224,16 @@ function setup_i_sound {
 
 function setup_i_autocompl {
   $regpath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete"
-  if(!(Test-Path $regpath)){
-    New-Item $regpath -Force | Out-Null
-  }
+  CondNewItem $regpath | Out-Null
   Set-ItemProperty -path $regpath -Name "Append Completion" -Value "yes" | Out-Null
 }
 
 function setup_i_explorer {
   # show hidden files
   $explorerm = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
-  if(!(Test-Path $explorerm)){
-    New-Item $explorerm -Force | Out-Null
-  }
+  CondNewItem $explorerm | Out-Null
   $exploreru = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
-  if(!(Test-Path $exploreru)){
-    New-Item $exploreru -Force | Out-Null
-  }
+  CondNewItem $exploreru | Out-Null
 
   # show hidden files
   New-ItemProperty -path $explorerm -Name "Hidden" -Value 1 -Force | Out-Null
@@ -271,30 +263,22 @@ function setup_i_explorer {
 function setup_i_colors {
   # black for metro style
   $registryPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize"
-  if(!(Test-Path $registryPath)){
-    New-Item $registryPath -Force| Out-Null
-  }
+  CondNewItem $registryPath | Out-Null
   New-ItemProperty -path $registryPath -Name "AppsUseLightTheme" -Value 0 -Force | Out-Null
   New-ItemProperty -path $registryPath -Name "SystemUsesLightTheme" -Value 0 -Force | Out-Null
 
   $registryPath = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize"
-  if(!(Test-Path $registryPath)){
-    New-Item $registryPath -Force| Out-Null
-  }
+  CondNewItem $registryPath | Out-Null
   New-ItemProperty -path $registryPath -Name "AppsUseLightTheme" -Value 0 -Force | Out-Null
   New-ItemProperty -path $registryPath -Name "SystemUsesLightTheme" -Value 0 -Force | Out-Null
 
   # gray for classic style
   $registryPath = "HKCU:\Control Panel\Colors"
-  if(!(Test-Path $registryPath)){
-    New-Item $registryPath -Force| Out-Null
-  }
+  CondNewItem $registryPath | Out-Null
   New-ItemProperty -path $registryPath -Name "Window" -Value "192 192 192" -Force | Out-Null
 
   $registryPath = "HKCU:\Control Panel\Desktop\Colors"
-  if(!(Test-Path $registryPath)){
-    New-Item $registryPath -Force| Out-Null
-  }
+  CondNewItem $registryPath | Out-Null
   New-ItemProperty -path $registryPath -Name "Window" -Value "192 192 192" -Force | Out-Null
 }
 
@@ -315,9 +299,7 @@ function setup_i_disable_autoplay {
 
   # maybe not necessary
   $registryPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer"
-  If (!(Test-Path $registryPath)) {
-    New-Item $registryPath -Force| Out-Null
-  }
+  CondNewItem $registryPath | Out-Null
   Set-ItemProperty -Path $registryPath -Name "NoDriveTypeAutoRun" -Type DWord -Value 255 | Out-Null
 }
 
@@ -344,9 +326,7 @@ function setup_raise_uac {
 function setup_clean_remove_onedrive {
   # disable
   $registryPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive"
-  If (!(Test-Path $registryPath)) {
-    New-Item $registryPath -Force| Out-Null
-  }
+  CondNewItem $registryPath | Out-Null
   Set-ItemProperty -Path $registryPath -Name "DisableFileSyncNGSC" -Type DWord -Value 1 | Out-Null
 
   # "uninstall"
@@ -410,9 +390,7 @@ function setup_vm {
 
   # disable locking with <Win>+l
   $registryPath = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
-  If (!(Test-Path $registryPath)) {
-    New-Item $registryPath -Force| Out-Null
-  }
+  CondNewItem $registryPath | Out-Null
   Set-ItemProperty -Path $registryPath -Name "DisableLockWorkstation" -Type DWord -Value 1 | Out-Null
 
   foreach ($user in (Get-WmiObject -Class Win32_UserAccount -filter "LocalAccount = True")){
@@ -572,31 +550,23 @@ function setup_i_conf_npp {
 
   # register and set editor for unknown files
   $key = "Registry::HKEY_CLASSES_ROOT\Unknown\shell"
-  If (!(Test-Path $key)) {
-    New-Item "$key" -Force | Out-Null
-  }
+  CondNewItem $key | Out-Null
   Set-ItemProperty -Path "$key" -name '(Default)' -Value "editor"
 
   $key = "Registry::HKEY_CLASSES_ROOT\Unknown\shell\editor\command"
-  If (!(Test-Path $key)) {
-    New-Item "$key" -Force | Out-Null
-  }
+  CondNewItem  $key | Out-Null
   Set-ItemProperty -Path "$key" -name '(Default)' -Value "$editor `"%1`""
 
   # register editor for known textual files
   $key = "Registry::HKEY_CLASSES_ROOT\Unknown\shell\Open\command"
-  If (!(Test-Path $key)) {
-    New-Item "$key" -Force | Out-Null
-  }
+  CondNewItem $key | Out-Null
   Set-ItemProperty -Path "$key" -name '(Default)' -Value "$editor `"%1`""
 
   # set default editor for already known extual files
   $filetypes = @("txtfile", "inifile", "xmlfile")
   foreach ($filetype in $filetypes) {
     $key = (Join-Path (Join-Path Registry::HKEY_CLASSES_ROOT $filetype) shell\open\command)
-    If (!(Test-Path $key)) {
-      New-Item "$key" -Force | Out-Null
-    }
+    CondNewItem $key | Out-Null
     Set-ItemProperty -Path "$key" -name '(Default)' -Value "$editor `"%1`""
   }
 
@@ -612,9 +582,7 @@ function setup_i_conf_npp {
 
 
   $key = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\editor.exe"
-  If (!(Test-Path $key)) {
-    New-Item "$key" -Force | Out-Null
-  }
+  CondNewItem $key | Out-Null
   Set-ItemProperty -Path "$key" -name '(Default)' -Value "$editor"
 }
 
