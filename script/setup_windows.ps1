@@ -16,6 +16,7 @@
 
 # speed setup process up
 setup_disable_defender_until_reboot
+setup_disable_updates_until_reboot
 
 setup_theme
 setup_disk

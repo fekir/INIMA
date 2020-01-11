@@ -158,6 +158,10 @@ function setup_disable_defender_until_reboot {
   Set-MpPreference -DisableRealtimeMonitoring $true
 }
 
+function setup_disable_updates_until_reboot {
+  Get-Service -Name wuauserv | Stop-Service -Force -ErrorAction SilentlyContinue
+}
+
 function setup_disable_defender {
   Set-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\Windows Defender" -Name "DisableAntiSpyware" -Type DWord -Value 1 | Out-Null
 }
