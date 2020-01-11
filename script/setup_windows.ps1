@@ -19,6 +19,8 @@ setup_disable_defender_until_reboot
 
 setup_theme
 setup_disk
+setup_privacy
+setup_disable_features_services
 
 if ($env:SETUP_KEYMAP) {
     Set-WinUserLanguageList -LanguageList "$env:SETUP_KEYMAP" -Force

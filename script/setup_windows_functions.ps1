@@ -44,35 +44,20 @@ function setup_more_privacy {
 }
 
 function setup_disable_features_services {
-  # Query features
-  # dism /Online /Get-Features
+  # FIXME: clean before disabling features, otherwise triggers "pending action" error
+  #dism /online /Cleanup-Image /StartComponentCleanup /ResetBase /NoRestart
 
-  # disable ie
-  dism /Online /Disable-Feature /FeatureName:"Internet-Explorer-Optional-x64" /NoRestart | Out-Null
-  dism /Online /Disable-Feature /FeatureName:"Internet-Explorer-Optional-x86" /NoRestart | Out-Null
-  dism /Online /Disable-Feature /FeatureName:"Internet-Explorer-Optional-amd64" /NoRestart | Out-Null
-  dism /Online /Disable-Feature /FeatureName:"LegacyComponents" /NoRestart | Out-Null
+  Get-WindowsCapability -Online | where { $_.Name -match "Hello.Face|InternetExplorer|Language.Handwriting|Language.OCR|Language.Speech|Language.TextToSpeech|MathRecognizer|Media.WindowsMediaPlayer|XPS" -and $_.State -eq "Installed"} | Remove-WindowsCapability -Online -ErrorAction SilentlyContinue | Out-Null
+
+  # FIXME: seems to cause some issues during provisioning
+  #Get-WindowsOptionalFeature -Online | where { $_.FeatureName -match "XPS|LegacyComponents|DirectPlay" -and $_.State -eq "Enabled" } | Disable-WindowsOptionalFeature -Online -ErrorAction SilentlyContinue | Out-Null
+
+  Get-AppxProvisionedPackage -Online | where { $_.PackageName -match "bing|getstarted|3DViewer|OfficeHub|Solitaire|MixedReality|People|Print3D|SkypeApp|Xbox|Zune" } | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+
 
   # disable media player
   Get-Service WMPNetworkSvc -ErrorAction SilentlyContinue | Stop-Service -PassThru | Set-Service -StartupType Disabled
 
-  dism /Online /Disable-Feature /FeatureName:"DirectPlay" /NoRestart | Out-Null
-  dism /Online /Disable-Feature /FeatureName:"MediaPlayback" /NoRestart | Out-Null
-  dism /Online /Disable-Feature /FeatureName:"MediaCenter" /NoRestart | Out-Null
-  dism /Online /Disable-Feature /FeatureName:"WindowsMediaPlayer" /NoRestart | Out-Null
-
-  # disable xps
-  dism /Online /Disable-Feature /FeatureName:"Printing-XPSServices-Features" /NoRestart | Out-Null
-  dism /Online /Disable-Feature /FeatureName:"Xps-Foundation-Xps-Viewer" /NoRestart | Out-Null
-
-  # disable online games
-  dism /Online /Disable-Feature /FeatureName:"InboxGames" /NoRestart | Out-Null
-  dism /Online /Disable-Feature /FeatureName:"Internet Games" /NoRestart | Out-Null
-  dism /Online /Disable-Feature /FeatureName:"Internet Backgammon" /NoRestart | Out-Null
-  dism /Online /Disable-Feature /FeatureName:"Internet Checkers" /NoRestart | Out-Null
-
-  dism /Online /Disable-Feature /FeatureName:"WindowsGadgetPlatform" /NoRestart | Out-Null
-  dism /Online /Disable-Feature /FeatureName:"FaxServicesClientPackage" /NoRestart | Out-Null
 
   #diagnostic
   Get-Service diagnosticshub.standardcollector.service,DiagTrack -ErrorAction SilentlyContinue | Stop-Service -PassThru | Set-Service -StartupType Disabled
@@ -115,29 +100,10 @@ function setup_disable_features_services {
   CondNewItem $gamedvr | Out-Null
   Set-ItemProperty -Path $gamedvr -Name "AppCaptureEnabled" -Type DWord -Value 0 | Out-Null
   Set-ItemProperty -Path "HKCU:\System\GameConfigStore" -Name "GameDVR_Enabled" -Type DWord -Value 0 | Out-Null
-}
 
-function setup_disk {
-  # removes some functionality, hopefully increases performance
-  # it could break some old apps...
-  # https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/fsutil-behavior
-  fsutil behavior set disable8dot3 1
-  fsutil behavior set disablelastaccess 1
 
-  # fixed 100% disk usage on some machines
-  New-Item 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' -Force | New-ItemProperty -Name EnableBalloonTips -Value 0 -Force | Out-Null
-}
-
-function setup_enable_crash_dumps {
-  $registryPath='HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps'
-  New-Item $registryPath -Force | New-ItemProperty -Name "DumpFolder" -Value "%%LOCALAPPDATA%%\CrashDumps" -Force | Out-Null
-  New-Item $registryPath -Force | New-ItemProperty -Name "DumpCount" -Value 3 -Force | Out-Null
-  New-Item $registryPath -Force | New-ItemProperty -Name "DumpType" -Value 2 -Force | Out-Null
-}
-
-function setup_remove_universal_apps {
   # 3rd party programs, and programs with no use
-  Get-AppxPackage | where {$_.name -Match "officehub|skype|getstarted|zune|solitaire|twitter|candy|farmville|airborne|bing|people|phone|xbox|sway|pandora|adobe|eclipse|duolingo|speed|power|messaging|remote"} | Remove-AppxPackage -ErrorAction SilentlyContinue
+  Get-AppxPackage | where {$_.name -Match "officehub|skype|getstarted|zune|solitaire|twitter|candy|farmville|airborne|advertising|bing|people|phone|xbox|sway|pandora|adobe|eclipse|duolingo|speed|power|messaging|remote"} | Remove-AppxPackage -ErrorAction SilentlyContinue
 
   # may remove functionality from windows
   Get-AppxPackage | where {$_.name -Match "3dbuilder|windowsalarms|windowscommunication|windowscamera|onenote|soundrecorder|store|viewer|paint|help"} | Remove-AppxPackage -ErrorAction SilentlyContinue
@@ -167,6 +133,25 @@ function setup_remove_universal_apps {
   $explorer = "HKLM:\Software\Policies\Microsoft\Windows\Explorer"
   CondNewItem $explorer | Out-Null
   Set-ItemProperty -Path $explorer -Name "NoUseStoreOpenWith" -Type DWord -Value 1 | Out-Null
+
+}
+
+function setup_disk {
+  # removes some functionality, hopefully increases performance
+  # it could break some old apps...
+  # https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/fsutil-behavior
+  fsutil behavior set disable8dot3 1
+  fsutil behavior set disablelastaccess 1
+
+  # fixed 100% disk usage on some machines
+  New-Item 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' -Force | New-ItemProperty -Name EnableBalloonTips -Value 0 -Force | Out-Null
+}
+
+function setup_enable_crash_dumps {
+  $registryPath='HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps'
+  New-Item $registryPath -Force | New-ItemProperty -Name "DumpFolder" -Value "%%LOCALAPPDATA%%\CrashDumps" -Force | Out-Null
+  New-Item $registryPath -Force | New-ItemProperty -Name "DumpCount" -Value 3 -Force | Out-Null
+  New-Item $registryPath -Force | New-ItemProperty -Name "DumpType" -Value 2 -Force | Out-Null
 }
 
 function setup_disable_defender_until_reboot {
@@ -531,7 +516,6 @@ function setup_zero_drive {
 
 function setup_cleanup {
   setup_clean_remove_onedrive
-  setup_remove_universal_apps
 
   setup_cleanup_fast
 
