@@ -371,34 +371,26 @@ function setup_clean_remove_onedrive {
   Remove-Item "$env:HOMEDRIVE\Users\*\Links\OneDrive.lnk" -Force -Recurse -ErrorAction SilentlyContinue
 }
 
-function setup_clean_path {
-  $mypath = $env:path
-
-  # declare arr as such
-  $tmparr = $tmparr2 = @()
-
-  # split on ;
-  $tmparr = $mypath.split(";")
-
-  # remove last backslash and path that do not exist
-  foreach($item in $tmparr){
-    if($item[-1] -eq "\"){$item = $item -replace "\\$",""}
-    if( (![string]::IsNullOrEmpty($item)) -and (Test-Path $item) ){
-      $tmparr2 += $item
+function setup_clean_path_i([string] $envtarget) {
+  $mypath = [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::$envtarget).split(";") | Where { $_ -and $_.Trim() } | select -Unique
+  $newpath = @()
+  # remove last slash/backslash and path that do not exist
+  foreach($item in $mypath){
+    if($item[-1] -eq "\" -or $item[-1] -eq "/") {
+      $item = $item.Substring(0, $item.Length-1)
+    }
+    if(Test-Path -Path $item -PathType Container) {
+      $newpath += $item
     }
   }
+  $mypath = [string]::join(";", $newpath)
 
-  # remove duplicates
-  $tmparr = $tmparr2 | Sort-Object -Unique -Descending
+  [Environment]::SetEnvironmentVariable("Path", $mypath, [EnvironmentVariableTarget]::$envtarget)
+}
 
-  # sort entries
-
-  # save old path, just in case
-  [Environment]::SetEnvironmentVariable("OldPath", $env:path, [EnvironmentVariableTarget]::Machine)
-  # save new path
-  $mypath = [string]::join(";", $tmparr)
-  [Environment]::SetEnvironmentVariable("Path", $mypath, [EnvironmentVariableTarget]::Machine)
-  $env:path = $mypath
+function setup_clean_path {
+  setup_clean_path_i("Machine")
+  setup_clean_path_i("User")
 }
 
 function setup_vm {

@@ -41,3 +41,5 @@ setup_cleanup_fast
 if ($env:SETUP_CLEAN -eq "true" -or $env:SETUP_CLEAN -eq "no_universal_apps") {
   setup_cleanup
 }
+
+setup_clean_path
