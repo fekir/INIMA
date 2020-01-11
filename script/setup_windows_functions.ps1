@@ -373,6 +373,8 @@ function setup_clean_remove_onedrive {
   Remove-Item -Path "Registry::HKEY_CLASSES_ROOT\Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}" -Recurse -ErrorAction SilentlyContinue
   Remove-Item "$env:USERPROFILE\Links\OneDrive.lnk" -Force -Recurse -ErrorAction SilentlyContinue
   Remove-Item "$env:SYSTEMDRIVE\Users\*\Links\OneDrive.lnk" -Force -Recurse -ErrorAction SilentlyContinue
+
+  Get-ScheduledTask -TaskPath '\' -TaskName 'OneDrive*' -ErrorAction SilentlyContinue | Unregister-ScheduledTask -Confirm:$false
 }
 
 function setup_clean_path_i([string] $envtarget) {
