@@ -337,18 +337,20 @@ function setup_clean_remove_onedrive {
       $onedrive = "$env:SYSTEMROOT\System32\OneDriveSetup.exe"
   }
   Start-Process $onedrive "/uninstall" -NoNewWindow -Wait
+
   Start-Sleep -s 3
   Stop-Process -Name explorer -ErrorAction SilentlyContinue
   Start-Sleep -s 3
+
   Remove-Item "$env:USERPROFILE\OneDrive" -Force -Recurse -ErrorAction SilentlyContinue
-  Remove-Item "$env:HOMEDRIVE\Users\*\OneDrive" -Force -Recurse -ErrorAction SilentlyContinue
+  Remove-Item "$env:SYSTEMDRIVE\Users\*\OneDrive" -Force -Recurse -ErrorAction SilentlyContinue
   Remove-Item "$env:LOCALAPPDATA\Microsoft\OneDrive" -Force -Recurse -ErrorAction SilentlyContinue
   Remove-Item "$env:PROGRAMDATA\Microsoft OneDrive" -Force -Recurse -ErrorAction SilentlyContinue
   Remove-Item "$env:SYSTEMDRIVE\OneDriveTemp" -Force -Recurse -ErrorAction SilentlyContinue
   Remove-Item -Path "Registry::HKEY_CLASSES_ROOT\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}" -Recurse -ErrorAction SilentlyContinue
   Remove-Item -Path "Registry::HKEY_CLASSES_ROOT\Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}" -Recurse -ErrorAction SilentlyContinue
   Remove-Item "$env:USERPROFILE\Links\OneDrive.lnk" -Force -Recurse -ErrorAction SilentlyContinue
-  Remove-Item "$env:HOMEDRIVE\Users\*\Links\OneDrive.lnk" -Force -Recurse -ErrorAction SilentlyContinue
+  Remove-Item "$env:SYSTEMDRIVE\Users\*\Links\OneDrive.lnk" -Force -Recurse -ErrorAction SilentlyContinue
 }
 
 function setup_clean_path_i([string] $envtarget) {
@@ -382,7 +384,7 @@ function setup_vm {
   powercfg /SETDCVALUEINDEX SCHEME_CURRENT SUB_NONE CONSOLELOCK 0
   powercfg /SETACVALUEINDEX SCHEME_CURRENT SUB_NONE CONSOLELOCK 0
 
-  disable-computerrestore -drive "$env:HOMEDRIVE\"
+  disable-computerrestore -drive "$env:SYSTEMDRIVE\"
   # check how to disable wifi
 
   Stop-Service "Power" -ErrorAction SilentlyContinue
@@ -427,7 +429,7 @@ function setup_empty_recycle_bin {
 function setup_rm_desktop_links
 {
   # cannot add | Out-Null or result is empty
-  $files = Get-ChildItem "$env:HOMEDRIVE\Users\*\Desktop\*" -filter "*.lnk" -force
+  $files = Get-ChildItem "$env:SYSTEMDRIVE\Users\*\Desktop\*" -filter "*.lnk" -force
   for ($i=0; $i -lt $files.Count; $i++) {
     rm $files[$i].FullName -ErrorAction SilentlyContinue
   }
@@ -454,7 +456,7 @@ function setup_cleanup_fast {
 }
 
 function setup_zero_drive {
-  $FilePath="$env:HOMEDRIVE\zero.tmp"
+  $FilePath="$env:SYSTEMDRIVE\zero.tmp"
   $Volume= Get-Volume -DriveLetter C
   $ArraySize= 64kb
   $SpaceToLeave= $Volume.Size * 0.05
@@ -493,9 +495,9 @@ function setup_cleanup {
 
   Write-Host "clean log"
   wevtutil el | Foreach-Object {wevtutil cl "$_"} -ErrorAction SilentlyContinue
-  Remove-Item -Recurse "$env:HOMEDRIVE\Windows\Logs\*" -Force -ErrorAction SilentlyContinue | Out-Null
+  Remove-Item -Recurse "$env:SYSTEMROOT\Logs\*" -Force -ErrorAction SilentlyContinue | Out-Null
 
-  Remove-Item -Recurse "$env:HOMEDRIVE\Windows\Prefetch\*" -Force -ErrorAction SilentlyContinue | Out-Null
+  Remove-Item -Recurse "$env:SYSTEMROOT\Prefetch\*" -Force -ErrorAction SilentlyContinue | Out-Null
 
   Write-Host "defrag"
   Optimize-Volume -DriveLetter C
@@ -518,14 +520,14 @@ function setup_install_cygwin {
     & $destination --no-desktop --local-package-dir "$env:Temp" --site $mirror --quiet-mode --packages $env:SETUP_CYGWIN_PACKAGES | Out-Null
   }
 
-  Add-Content "$env:HOMEDRIVE\cygwin64\etc\nsswitch.conf" "`n"
-  Add-Content "$env:HOMEDRIVE\cygwin64\etc\nsswitch.conf" "db_home: /%H`n"   # change default home, prefer "/%H" to "windows" in case we are in a domain
-  # Add-Content "$env:HOMEDRIVE\cygwin64\etc\nsswitch.conf" "db_shell: /bin/zsh`n" # change default shell
+  Add-Content "$env:SYSTEMDRIVE\cygwin64\etc\nsswitch.conf" "`n"
+  Add-Content "$env:SYSTEMDRIVE\cygwin64\etc\nsswitch.conf" "db_home: /%H`n"   # change default home, prefer "/%H" to "windows" in case we are in a domain
+  # Add-Content "$env:SYSTEMDRIVE\cygwin64\etc\nsswitch.conf" "db_shell: /bin/zsh`n" # change default shell
 
   # chere with default shell -> reported in nsswitch changed
   powershell {
-    $env:Path += ";$env:HOMEDRIVE\cygwin64\bin;"
-    & "$env:HOMEDRIVE\cygwin64\bin\bash.exe" chere -i -t mintty
+    $env:Path += ";$env:SYSTEMDRIVE\cygwin64\bin;"
+    & "$env:SYSTEMDRIVE\cygwin64\bin\bash.exe" chere -i -t mintty
   }
   # FIXME: make more programmatically
   Add-MpPreference -ExclusionProcess bash
@@ -534,7 +536,7 @@ function setup_install_cygwin {
   Add-MpPreference -ExclusionProcess nano
   Add-MpPreference -ExclusionProcess vim
   Add-MpPreference -ExclusionProcess mintty
-  Add-MpPreference -ExclusionPath "$env:HOMEDRIVE\cygwin64"
+  Add-MpPreference -ExclusionPath "$env:SYSTEMDRIVE\cygwin64"
   if ($SETUP_CHOCO_PACKAGES -like '*git*') {
     Add-MpPreference -ExclusionProcess tig
     Add-MpPreference -ExclusionProcess git
