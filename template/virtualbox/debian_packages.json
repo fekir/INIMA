@@ -59,8 +59,8 @@
 		}
 	],
 	"variables": {
-		"cpus": "1",
-		"memory": "512",
+		"cpus": "2",
+		"memory": "2048",
 		"vram": "32",
 		"headless": "true",
 		"no_proxy": "{{env `no_proxy`}}",
