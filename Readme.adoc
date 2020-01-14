@@ -32,18 +32,18 @@ Functionalities are splitted in functions, in order to be able able to invoke th
 
 ----
 packer build template/virtualbox/debian-base.json
-packer build template/virtualbox/debian-mate.json
-vboxmanage import out/virtualbox/debian-mate/debian.ovf
+packer build template/virtualbox/debian-packages.json
+vboxmanage import out/virtualbox/debian-packages/debian.ovf
 ----
 
 ----
 packer build template/virtualbox/windows-base.json
 packer build template/virtualbox/windows-setup.json
-vboxmanage import out/virtualbox/debian-setup/windows.ovf
+vboxmanage import out/virtualbox/windows-setup/windows.ovf
 ----
 
 == Customize environments
-If you want to customize the environment, you should primarly look inside the `script` directory.
+If you want to customize the environment, you should primarily look inside the `script` directory.
 Template and Bootstrap files are as minimal as possible, in order to not depend on a particular configuration or tool.
 This has the advantage that the script file have as much logic as possible.
 
@@ -62,15 +62,15 @@ Supported parameters are:
 	- password: login password/password to set in the `*_base` templates (not supported on windows templates)
 	- username: login username/username to set in the `*_base` templates (not supported on windows templates)
 	- vm_name: name of virtual machine
-	- vmachine: set this value to "linux" or "windows" in order ot load the right guest additions, if empty, not additions are loaded (saves a lot of time with windows)
+	- vmachine: set this value to "linux" or "windows" in order to load the right guest additions, if empty, no additions are loaded (saves a lot of time with windows)
 	- packages/choco_packages/cygwin_packages: comma separated list of package to install. Since windows does not have an integrated package manager, use `choco_packages` and `cygwin_packages`
 	- keymap: keymap of the virtual machine, formats are host-specific (for example on GNU/Linux the English keyboard is en, on Windows it's en-US)
 	- locale: locale of the virtual machine, formats are host-specific (not currently supported on windows)
 	- lc_time: time format of the virtual machine, formats are host-specific (not currently supported on Windows)
 	- timezone: timezone of the virtual machine, formats are in the form "area/zone" (host-specific, for example Berlin on Debian is "Europe/Berlin")
-	- cleanup: if at the end of the setup we need to clean as mcuh as possible to reduce space requirements. This passage can be time consuming.
+	- cleanup: if at the end of the setup we need to clean as much as possible to reduce space requirements. This passage can be time consuming.
 
-The list might not be complete, and some parameter might be avaiable only on some provisioners/gest OS.
+The list might not be complete, and some parameter might be available only on some provisioner/gest OS.
 
 == Why so many templates per machine? Why so many build steps?
 Most projects provide just a template that takes an iso, and create a fully fledged Virtual Machine.
@@ -84,7 +84,7 @@ Yep, destroy the whole machine and try again!
 Saving intermediary result (a naked windows machine, a naked windows machine with updates,...) gives me the possibility not to repeat the whole process, and also test my environments better, since I can inspect different steps one by one.
 
 What if you need quickly a machine for prototyping something and eventually throw it away?
-Is's surely irrelevant to wait a couple of hours for cleaning and filling the virtual drive with `0` in order to be able to compress it better and squeeze every little bit out of it.
+It's surely irrelevant to wait a couple of hours for cleaning and filling the virtual drive with `0` in order to be able to compress it better and squeeze every little bit out of it.
 
 And if you already have a working environment and just want to install the newest updates without waiting the whole day? Or just add a couple of tools on top of it.
 Best practice would maybe be to create a completely new machine, but it's not practicable to always wait hours forgetting a working environment.
@@ -94,7 +94,7 @@ These and other are the reason why there should be at least two packer templates
 Unfortunately this has some overhead since we need to export/import the machine multiple times, but if you are experimenting with tose tools, it will save you hours and hours, if not days.
 
 I mostly mentioned Windows, but also with GNU/Linux distributions I had similar problems.
-You need the LaTex Suite or want to use a not so minimal desktop environment?
+You need the LaTeX Suite or want to use a not so minimal desktop environment?
 You need to download multiple Gigabytes of data, even with a top-speed internet connection it takes some time to download configure and install everything.
 And yes, sometimes your are not able to download a package (probably the last one), and you need to try a second time.
 
@@ -103,7 +103,7 @@ I believe that one scripts that does only one thing (install a specific program,
 If we want to add or remove an action, we need to edit the template file, add the new script, and eventually edit the bootstrap file.
 Of course we should split our functionalities in order that every piece `does only one thing, and does it well`.
 
-Fortunately both unix shells and Microsoft powershell have functions, so all functionalities are splitted into functions and called from a "main" script.
+Fortunately both Unix shells and Microsoft powershell have functions, so all functionalities are splitted into functions and called from a "main" script.
 This way, most of the time, there is no need to speak different languages (shell dialect, packer config files, ...) and wonder how we should adapt the whole infrastructure to our needs.
 Just speak the (power)shell language and look at two files: the one with all functions (they are not that many!) and the main file for calling our functions.
 
@@ -120,7 +120,7 @@ vdiskmanager -d 'path to vmdk' # defragments image file
 vdiskmanager -k 'path to vmdk' # compacts image file
 ----
 
-Otherwise virtualbox is able resize `vmdk` file by converting them to `vdi` and back (it will change the UUID)
+Otherwise VirtualBox is able resize `vmdk` file by converting them to `vdi` and back (it will change the UUID)
 
 ----
 VBoxManage clonemedium disk --format VDI 'path to input vmdk' 'path to output vdi'
@@ -131,7 +131,7 @@ VBoxManage clonemedium disk 'path to input vdi'  'path to output vmdk'
 While for compressing vdi files with virtualbox work OOB.
 
 
-Both windows and the debian templates have a `cleanup` setting for removing as much data (logs, documentation, temporary files, ...) as possible, and overwrite free space with `\0`.
+Both windows and the Debian templates have a `cleanup` setting for removing as much data (logs, documentation, temporary files, ...) as possible, and overwrite free space with `\0`.
 Just set the value to `true`, to enable it.
 It is not set by default since it could delete some data useful for a later step, and because overwriting every free byte on the virtual disk is very time and space-consuming.
 Also defragmenting and compaticting virtual images, is generally a time consuming operation.
