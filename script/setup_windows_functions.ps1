@@ -409,6 +409,67 @@ function setup_i_taskbar {
   # FIXME: remove edge
 }
 
+function setup_i_context_menu {
+  $shellprompts = @("Registry::HKEY_CLASSES_ROOT\Directory\shell\01MenuPrompt", "Registry::HKEY_CLASSES_ROOT\Directory\background\shell\01MenuPrompt");
+  foreach($shellprompt in $shellprompts){
+    CondNewItem $shellprompt | Out-Null;
+    New-ItemProperty -path $shellprompt -Name "MUIVerb" -Value "&Command &Prompts" -Force | Out-Null;
+    #New-ItemProperty -path $shellprompt -Name "Icon" -Value "???" -Force | Out-Null;
+    New-ItemProperty -path $shellprompt -Name "ExtendedSubCommandsKey" -Value "Directory\ContextMenus\MenuPrompt" -Force | Out-Null;
+  }
+
+  $cmd_command = 'cmd.exe /s /k pushd "%V"'
+  $entry="Registry::HKEY_CLASSES_ROOT\Directory\ContextMenus\MenuPrompt\shell\cmd";
+  CondNewItem $entry | Out-Null;
+  New-ItemProperty -path $entry -Name "NoWorkingDirectory" -Value "" -Force | Out-Null;
+  New-ItemProperty -path $entry -Name "MUIVerb" -Value "&Cmd" -Force | Out-Null;
+  New-ItemProperty -path $entry -Name "Icon" -Value "cmd.exe" -Force | Out-Null;
+  CondNewItem "$entry\command" | Out-Null;
+  New-ItemProperty -path "$entry\command" -Name '(Default)' -Value "$cmd_command" -Force | Out-Null;
+
+  $cmd_command = 'C:\Windows\SysWOW64\cmd.exe /s /k pushd "%V"'
+  $entry="Registry::HKEY_CLASSES_ROOT\Directory\ContextMenus\MenuPrompt\shell\cmd-32";
+  CondNewItem $entry | Out-Null;
+  New-ItemProperty -path $entry -Name "NoWorkingDirectory" -Value "" -Force | Out-Null;
+  New-ItemProperty -path $entry -Name "MUIVerb" -Value "Cmd (32 bit)" -Force | Out-Null;
+  New-ItemProperty -path $entry -Name "Icon" -Value "cmd.exe" -Force | Out-Null;
+  CondNewItem "$entry\command" | Out-Null;
+  New-ItemProperty -path "$entry\command" -Name '(Default)' -Value "$cmd_command" -Force | Out-Null;
+
+  $powershell_command = "powershell.exe -noexit -command Set-Location -literalPath '%V'"
+  $entry="Registry::HKEY_CLASSES_ROOT\Directory\ContextMenus\MenuPrompt\shell\powershell";
+  CondNewItem $entry | Out-Null;
+  New-ItemProperty -path $entry -Name "MUIVerb" -Value "&PowerShell" -Force | Out-Null;
+  New-ItemProperty -path $entry -Name "Icon" -Value "powershell.exe" -Force | Out-Null;
+  CondNewItem "$entry\command" | Out-Null;
+  New-ItemProperty -path "$entry\command" -Name '(Default)' -Value "$powershell_command" -Force | Out-Null;
+
+  # FIXME: key needs to be named runas -> cannot have more than one!
+  $entry="Registry::HKEY_CLASSES_ROOT\Directory\ContextMenus\MenuPrompt\shell\runas";
+  CondNewItem $entry | Out-Null;
+  New-ItemProperty -path $entry -Name "MUIVerb" -Value "&Elevated PowerShell" -Force | Out-Null;
+  New-ItemProperty -path $entry -Name "Icon" -Value "powershell.exe" -Force | Out-Null;
+  New-ItemProperty -path $entry -Name "HasLUAShield" -Value "" -Force | Out-Null;
+  CondNewItem "$entry\command" | Out-Null;
+  New-ItemProperty -path "$entry\command" -Name '(Default)' -Value "$powershell_command" -Force | Out-Null;
+
+  $entry="Registry::HKEY_CLASSES_ROOT\Directory\ContextMenus\MenuPrompt\shell\git-shell";
+  CondNewItem $entry | Out-Null;
+  New-ItemProperty -path $entry -Name "MUIVerb" -Value "&Git" -Force | Out-Null;
+  New-ItemProperty -path $entry -Name "Icon" -Value "C:\Program Files\Git\git-bash.exe" -Force | Out-Null;
+  CondNewItem "$entry\command" | Out-Null;
+  #New-ItemProperty -path "$entry\command" -Name '(Default)' -Value '"C:\Program Files\Git\git-bash.exe" "--cd=%v."' -Force | Out-Null;
+  New-ItemProperty -path "$entry\command" -Name '(Default)' -Value 'C:\Program Files\Git\usr\bin\mintty.exe --dir "%V/" -i /mingw64/share/git/git-for-windows.ico -' -Force | Out-Null;
+
+  $entry="Registry::HKEY_CLASSES_ROOT\Directory\ContextMenus\MenuPrompt\shell\cygwin-shell";
+  CondNewItem $entry | Out-Null;
+  New-ItemProperty -path $entry -Name "MUIVerb" -Value "Cygwin &Shell" -Force | Out-Null;
+  New-ItemProperty -path $entry -Name "Icon" -Value "C:\cygwin64\bin\mintty.exe" -Force | Out-Null;
+  CondNewItem "$entry\command" | Out-Null;
+  #New-ItemProperty -path "$entry\command" -Name '(Default)' -Value 'C:\cygwin64\bin\mintty.exe -i /Cygwin-Terminal.ico -e /bin/xhere /bin/zsh.exe "%V"' -Force | Out-Null;
+  New-ItemProperty -path "$entry\command" -Name '(Default)' -Value 'C:\cygwin64\bin\mintty.exe --dir "%V/" -i /Cygwin-Terminal.ico -' -Force | Out-Null;
+}
+
 function setup_i_disable_autoplay {
   Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\AutoplayHandlers" -Name "DisableAutoplay" -Type DWord -Value 1 | Out-Null
 
