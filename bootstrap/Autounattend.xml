@@ -37,7 +37,7 @@
 				-->
 				<ProductKey>
 					<Key>MH37W-N47XK-V7XM9-C7227-GCQG9</Key>
-					<WillShowUI>Never</WillShowUI>
+					<WillShowUI>OnError</WillShowUI>
 				</ProductKey>
 			</UserData>
 			<ImageInstall>
