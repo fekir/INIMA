@@ -62,21 +62,27 @@ function setup_disable_features_services {
   Get-Service diagnosticshub.standardcollector.service,DiagTrack,dmwappushservice -ErrorAction SilentlyContinue | Stop-Service -PassThru | Set-Service -StartupType Disabled
 
   # # Disable CEIP Tasks
-  Get-ScheduledTask -TaskPath "\Microsoft\Windows\Customer Experience Improvement Program\" | Disable-ScheduledTask
+  Get-ScheduledTask -TaskPath "\Microsoft\Windows\Customer Experience Improvement Program\" | Disable-ScheduledTask | Out-Null
   # Blank out AutoLogger
-  New-Item "$env:ProgramData\Microsoft\Diagnosis\ETLLogs\AutoLogger\AutoLogger-Diagtrack-Listener.etl" -ItemType File -Force
+  New-Item "$env:ProgramData\Microsoft\Diagnosis\ETLLogs\AutoLogger\AutoLogger-Diagtrack-Listener.etl" -ItemType File -Force | Out-Null
   # Don't send malware samples to Microsoft
-  New-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\Windows Defender\Spynet" -Name SubmitSamplesConsent -Value 2 -Force
+  $spynet = "HKLM:\Software\Policies\Microsoft\Windows Defender\Spynet"
+  CondNewItem $spynet | Out-Null
+  New-ItemProperty -Path $spynet -Name SubmitSamplesConsent -Value 2 -Force | Out-Null
   # Don't send MRT telemetry
-  New-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\MRT" -Name DontReportInfectionInformation -Value 1 -Force
+  $mrt = "HKLM:\Software\Policies\Microsoft\MRT"
+  CondNewItem $mrt | Out-Null
+  New-ItemProperty -Path $mrt -Name DontReportInfectionInformation -Value 1 -Force | Out-Null
   # Set any remaining telemetry to only send security related information
-  New-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\DataCollection" -Name AllowTelemetry -Value 0 -Force
+  $datacollection = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\DataCollection"
+  CondNewItem $datacollection | Out-Null
+  New-ItemProperty -Path $datacollection -Name AllowTelemetry -Value 0 -Force | Out-Null
 
   # Geo services
-  Get-Service lfsvc,MapsBroker -ErrorAction SilentlyContinue | Stop-Service -PassThru | Set-Service -StartupType Disabled
+  Get-Service lfsvc,MapsBroker -ErrorAction SilentlyContinue | Stop-Service -PassThru | Set-Service -StartupType Disabled | Out-Null
 
   # search
-  Get-Service WSearch -ErrorAction SilentlyContinue | Stop-Service -PassThru | Set-Service -StartupType Disabled
+  Get-Service WSearch -ErrorAction SilentlyContinue | Stop-Service -PassThru | Set-Service -StartupType Disabled | Out-Null
   $wsearchsettings = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search"
   CondNewItem $wsearchsettings | Out-Null
   Set-ItemProperty -Path $wsearchsettings -Name "AllowCortana" -Value 0 | Out-Null
@@ -104,7 +110,7 @@ function setup_disable_features_services {
   CondNewItem $people | Out-Null
   Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\People" -Name "PeopleBand" -Type DWord -Value 0 | Out-Null
 
-# xbox, games
+  # xbox, games
   Get-Service XblAuthManager,XblGameSave,XboxNetApiSvc -ErrorAction SilentlyContinue | Stop-Service -PassThru | Set-Service -StartupType Disabled
   $gamedvr = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\GameDVR"
   CondNewItem $gamedvr | Out-Null
@@ -430,8 +436,8 @@ function setup_vm {
       if (!(Test-Path $exec) ) {
         continue;
       }
-      Get-ChildItem (Join-Path $Drive.Root "cert") -Filter *.cer | ForEach-Object { certutil -addstore -f "TrustedPublisher" $_.FullName }
-      Start-Process -FilePath "$exec" -ArgumentList "/S" -Wait
+      Get-ChildItem (Join-Path $Drive.Root "cert") -Filter *.cer | ForEach-Object { certutil -addstore -f "TrustedPublisher" $_.FullName | Out-Null }
+      Start-Process -Wait -FilePath "$exec" -ArgumentList @("/S");
       break;
     }
   } elseif ($env:PACKER_BUILDER_TYPE -like "*vmware*") {
