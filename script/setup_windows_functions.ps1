@@ -598,10 +598,11 @@ function setup_install_cygwin {
   Add-MpPreference -ExclusionProcess vim
   Add-MpPreference -ExclusionProcess mintty
   Add-MpPreference -ExclusionPath "$env:SYSTEMDRIVE\cygwin64"
-  if ($SETUP_CHOCO_PACKAGES -like '*git*') {
+  if ($env:SETUP_CYGWIN_PACKAGES -like '*git*') {
     Add-MpPreference -ExclusionProcess tig
     Add-MpPreference -ExclusionProcess git
   }
+  Remove-Item $destination -Force -ErrorAction SilentlyContinue | Out-Null
 }
 
 # sets npp as default app for any file with no associations
@@ -664,7 +665,12 @@ function setup_install_choco {
   if ($env:SETUP_CHOCO_PACKAGES -like '*git*') {
     Add-MpPreference -ExclusionProcess tig
     Add-MpPreference -ExclusionProcess git
+    # remove git gui option from context menu
+    Remove-Item -Path "Registry::HKEY_CLASSES_ROOT\Directory\shell\git_gui" -Recurse -ErrorAction SilentlyContinue | Out-Null
+    Remove-Item -Path "Registry::HKEY_CLASSES_ROOT\LibraryFolder\background\shell\git_gui" -Recurse -ErrorAction SilentlyContinue | Out-Null
+    Remove-Item -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Classes\Directory\background\shell\git_gui" -Recurse -ErrorAction SilentlyContinue | Out-Null
   }
+  Remove-Item -Recurse "$env:ProgramData\chocolatey\logs\*" -Force -ErrorAction SilentlyContinue | Out-Null
 
   # FIXME: check how to change default apps (browser, mail client, ...)
 }
