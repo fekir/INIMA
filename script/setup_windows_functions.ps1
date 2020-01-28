@@ -59,7 +59,18 @@ function setup_disable_features_services {
   Get-Service WMPNetworkSvc -ErrorAction SilentlyContinue | Stop-Service -PassThru | Set-Service -StartupType Disabled
 
   #diagnostic
-  Get-Service diagnosticshub.standardcollector.service,DiagTrack -ErrorAction SilentlyContinue | Stop-Service -PassThru | Set-Service -StartupType Disabled
+  Get-Service diagnosticshub.standardcollector.service,DiagTrack,dmwappushservice -ErrorAction SilentlyContinue | Stop-Service -PassThru | Set-Service -StartupType Disabled
+
+  # # Disable CEIP Tasks
+  Get-ScheduledTask -TaskPath "\Microsoft\Windows\Customer Experience Improvement Program\" | Disable-ScheduledTask
+  # Blank out AutoLogger
+  New-Item "$env:ProgramData\Microsoft\Diagnosis\ETLLogs\AutoLogger\AutoLogger-Diagtrack-Listener.etl" -ItemType File -Force
+  # Don't send malware samples to Microsoft
+  New-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\Windows Defender\Spynet" -Name SubmitSamplesConsent -Value 2 -Force
+  # Don't send MRT telemetry
+  New-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\MRT" -Name DontReportInfectionInformation -Value 1 -Force
+  # Set any remaining telemetry to only send security related information
+  New-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\DataCollection" -Name AllowTelemetry -Value 0 -Force
 
   # Geo services
   Get-Service lfsvc,MapsBroker -ErrorAction SilentlyContinue | Stop-Service -PassThru | Set-Service -StartupType Disabled
