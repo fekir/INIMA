@@ -650,6 +650,9 @@ function setup_i_conf_npp {
 }
 
 function setup_install_choco {
+  If (!(Test-Path -PathType Leaf $PROFILE)) {
+    New-Item $PROFILE -ItemType File -Force | Out-Null;
+  }
   iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
   choco feature enable -n allowGlobalConfirmation
 
