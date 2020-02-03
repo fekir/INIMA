@@ -45,14 +45,15 @@ setup_installer_minimal(){
     printf 'path-exclude /usr/share/doc/*\n';
     printf 'path-exclude /usr/share/doc-base/*\n';
     printf 'path-exclude /usr/share/common-licenses/*\n';
-	# unless redistribuiting the machine, we do not need to keep copyright files
-    #printf 'path-include /usr/share/doc/*/copyright';
-	printf 'path-exclude /usr/share/man/*';
-	printf 'path-exclude /usr/share/man-db/*';
-	printf 'path-exclude /usr/share/groff/*';
-	printf 'path-exclude /usr/share/info/*';
-	printf 'path-exclude /usr/share/lintian/*printf '
-	#printf 'path-exclude /usr/share/locale/*'; # handled by localepurge
+    # unless redistribuiting the machine, we do not need to keep copyright files
+    printf 'path-include /usr/share/doc/*/copyright';
+    printf 'path-exclude /usr/share/man/*';
+    printf 'path-exclude /usr/share/man-db/*';
+    printf 'path-exclude /usr/share/groff/*';
+    printf 'path-exclude /usr/share/info/*';
+    printf 'path-exclude /usr/share/linda/*';
+    printf 'path-exclude /usr/share/lintian/*';
+    printf 'path-exclude /usr/share/locale/*';
   }>"/etc/dpkg/dpkg.cfg.d/01-no-doc-license-locale"
 
   {
