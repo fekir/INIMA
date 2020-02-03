@@ -54,6 +54,7 @@ setup_installer_minimal(){
     printf 'path-exclude /usr/share/linda/*';
     printf 'path-exclude /usr/share/lintian/*';
     printf 'path-exclude /usr/share/locale/*';
+    printf 'path-exclude /usr/lib/modules/*/kernel/drivers/net/wireless/*';
   }>"/etc/dpkg/dpkg.cfg.d/01-no-doc-license-locale"
 
   {
