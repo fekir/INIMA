@@ -65,7 +65,7 @@ setup_installer_minimal(){
 
 setup_lightdm_autologin(){
   # https://wiki.ubuntu.com/LightDM
-  if [ ! -f '/etc/lightdm/' ]; then
+  if [ ! -d '/etc/lightdm/' ]; then
     return
   fi
   mkdir '/etc/lightdm/lightdm.conf.d/' >/dev/null
