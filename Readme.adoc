@@ -31,15 +31,15 @@ Functionalities are splitted in functions, in order to be able able to invoke th
 == Sample: Create and import Virtualbox Machine
 
 ----
-packer build template/virtualbox/debian-base.json
-packer build template/virtualbox/debian-packages.json
-vboxmanage import out/virtualbox/debian-packages/debian.ovf
+packer build template/virtualbox/debian_base.json
+packer build template/virtualbox/debian_packages.json
+vboxmanage import out/virtualbox/debian_packages/debian.ovf
 ----
 
 ----
-packer build template/virtualbox/windows-base.json
-packer build template/virtualbox/windows-setup.json
-vboxmanage import out/virtualbox/windows-setup/windows.ovf
+packer build template/virtualbox/windows_base.json
+packer build template/virtualbox/windows_setup.json
+vboxmanage import out/virtualbox/windows_setup/windows.ovf
 ----
 
 == Customize environments
@@ -91,7 +91,7 @@ Best practice would maybe be to create a completely new machine, but it's not pr
 Why not take an existing machine and add whats missing?
 
 These and other are the reason why there should be at least two packer templates for every machine.
-Unfortunately this has some overhead since we need to export/import the machine multiple times, but if you are experimenting with tose tools, it will save you hours and hours, if not days.
+Unfortunately this has some overhead since we need to export/import the machine multiple times, but if you are experimenting with those tools, it will save you hours and hours, if not days.
 
 I mostly mentioned Windows, but also with GNU/Linux distributions I had similar problems.
 You need the LaTeX Suite or want to use a not so minimal desktop environment?
@@ -128,13 +128,13 @@ VBoxManage modifyhd --compact 'path to vdi'
 VBoxManage clonemedium disk 'path to input vdi'  'path to output vmdk'
 ----
 
-While for compressing vdi files with virtualbox work OOB.
+While for compressing vdi files with VirtualBox work OOB.
 
 
 Both windows and the Debian templates have a `cleanup` setting for removing as much data (logs, documentation, temporary files, ...) as possible, and overwrite free space with `\0`.
 Just set the value to `true`, to enable it.
 It is not set by default since it could delete some data useful for a later step, and because overwriting every free byte on the virtual disk is very time and space-consuming.
-Also defragmenting and compaticting virtual images, is generally a time consuming operation.
+Also defragmenting and compacting virtual images, is generally a time consuming operation.
 Therefore unless an image is going to be used an shared multiple times, probably the saved space is not worth the necessary time, especially for a newly installed operating system.
 
 Also give a look at: http://libguestfs.org/virt-sparsify.1.html
@@ -142,7 +142,8 @@ Zeroing hard rive is a very long operation.
 
 == Known bugs
 
-=== I'm unable to update a vmware machine
+=== I'm unable to update a VMware machine
+
 If you get a error like
 `Build 'vmware-vmx' errored: Error compacting disk: VMware error: Failed to open the disk '/patho/to/auto detect' : A file was not found (0x4).` or `Failed to defragment: A file was not found (0x4).`
 Then it is a known issue (see https://github.com/hashicorp/packer/issues/4885)
