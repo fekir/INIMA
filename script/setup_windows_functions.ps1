@@ -43,6 +43,56 @@ function setup_more_privacy {
   Set-ItemProperty -Path $memory -Name "ClearPageFileAtShutdown" -Value 1 | Out-Null
 }
 
+function setup_hardening {
+  $policies_codeid="HKLM:\SOFTWARE\Policies\Microsoft\Windows\Safer\CodeIdentifiers\";
+  New-ItemProperty -Path $policies_codeid -Name "authenticodeenabled" -Value 0 -Force | Out-Null
+  New-ItemProperty -Path $policies_codeid -Name "DefaultLevel" -Value 262144 | Out-Null
+  New-ItemProperty -Path $policies_codeid -Name "PolicyScope" -Value 0 | Out-Null
+  New-ItemProperty -Path $policies_codeid -Name "TransparentEnabled" -Value 1 | Out-Null
+  $executabletypes=@( #gpedit, Computer Configuration, Windows Settings, Security Settings, Software restriction Policies, Designated File types
+    , "ade", "adp", "bas", "bat", "chm", "cmd", "com", "cpl", "crt", "diagcab"
+    , "exe", "hlp", "hta", "inf", "ins", "isp", "mdb", "mde", "msc", "msi"
+    , "msp", "mst", "ocx", "pcd", "pif", "reg", "scr", "shs", "url", "vb", "vsix"
+    , "wsc"
+    # test/check, not listed like the others, but also get "executed" on double-click
+    , "application", "gadget", "vbs", "vbe", "js", "jse", "ws", "wsf"
+    , "wsh", "ps1", "ps1xml", "ps2" , "ps2xml", "psc1", "psc2"
+    , "msh", "msh1", "msh2", "mshxml", "msh1xml", "msh2xml", "scf", "rgs"
+  )
+  $commonextensions=@(
+    # documents
+    , "doc?", "pdf", "txt", "?htm?", "ppt?", "xls?",
+    # multimedia
+    , "mp?", "jp?g", "png"
+    # archives
+    , "zip", "rar"
+  )
+  New-ItemProperty -Path $policies_codeid -Name "ExecutableTypes" -PropertyType MultiString -Value $executabletypes | Out-Null
+  $policies_explorer="HKLM:\SOFTWARE\Policies\Microsoft\Windows\Explorer";
+  CondNewItem $policies_explorer | Out-Null
+  #Set-ItemProperty -Path $policies_explorer -Name "AdminInfoUrl" -Value "https://github.com/fekir/INIMA" | Out-Null
+  New-Item "C:\policies.txt" -ItemType File -Value "Policies created with INIMA`n`nSee https://github.com/fekir/INIMA for more information about the project.`n";
+  # FIXME: add only if not already set, or copy value to our policies.txt
+  Set-ItemProperty -Path $policies_explorer -Name "AdminInfoUrl" -Value "C:\policies.txt" | Out-Null
+
+  foreach ($cex in $commonextensions) {
+    foreach ($ext in $executabletypes) {
+      $guid = "{"+(New-Guid).guid+"}"
+      $path = "$policies_codeid\0\Paths\$guid"; # disallowed=0, Unrestricted=262144
+      New-Item $path -Force | Out-Null
+      New-ItemProperty -Path $path -Name "Description" -Value "INIMA" | Out-Null
+      New-ItemProperty -Path $path -Name "SaferFlags" -Value 0 | Out-Null
+      New-ItemProperty -Path $path -Name "Name" -Value "name" | Out-Null
+      New-ItemProperty -Path $path -Name "ItemData" -Value "*.$cex.$ext" | Out-Null
+    }
+  }
+
+  # while it might be interesting to disallow to execute programs outside of c:/windows and programfiles (whitelist approach)
+  # it might breaks installer (might need tmp (also needed by other programs like sysinternals) or other directories)
+  # portable applications (could whiteliste a bin directory under user profile)
+  # breaks "native" development
+}
+
 function setup_disable_features_services {
   # FIXME: clean before disabling features, otherwise triggers "pending action" error
   #dism /online /Cleanup-Image /StartComponentCleanup /ResetBase /NoRestart

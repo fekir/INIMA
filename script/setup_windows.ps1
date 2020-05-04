@@ -18,6 +18,7 @@
 setup_disable_defender_until_reboot
 setup_disable_updates_until_reboot
 
+setup_hardening
 setup_theme
 setup_disk
 setup_privacy
