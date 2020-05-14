@@ -86,11 +86,6 @@ setup_de(){
   if [ "${SETUP_DE#mate}" != "$SETUP_DE" ]; then
     apt-get --no-install-recommends --assume-yes install caja-open-terminal pluma eom atril >/dev/null
     update-alternatives --set x-terminal-emulator /usr/bin/mate-terminal.wrapper >/dev/null
-
-    # see https://github.com/mate-desktop/mate-panel/issues/57
-    # otherwise some shortcuts in the menu, like mc, vim, htop, ... are broken since they use xterm directly (onl when using mate)...
-    apt-get --assume-yes purge xterm >/dev/null
-    [ -f /usr/bin/xterm ] || ln -s /usr/bin/x-terminal-emulator /usr/bin/xterm
   elif [ "${SETUP_DE#lxde}" != "$SETUP_DE" ]; then
     apt-get --no-install-recommends --assume-yes install obconf >/dev/null
     update-alternatives --set x-terminal-emulator /usr/bin/lxterminal >/dev/null
