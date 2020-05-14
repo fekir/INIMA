@@ -102,10 +102,10 @@ setup_de(){
   apt-get --no-install-recommends --assume-yes install apt-xapian-index synaptic xdg-user-dirs >/dev/null
 
   apt-get --no-install-recommends --assume-yes install firefox-esr >/dev/null
-  update-alternatives --set x-www-browser /usr/bin/firefox-esr 2>/dev/null || true
-  update-alternatives --set x-www-browser /usr/bin/firefox 2>/dev/null || true
-  update-alternatives --set gnome-www-browser /usr/bin/firefox-esr 2>/dev/null || true
-  update-alternatives --set gnome-www-browser /usr/bin/firefox 2>/dev/null || true
+  [ -f /usr/bin/firefox-esr ] && update-alternatives --set x-www-browser /usr/bin/firefox-esr
+  [ -f /usr/bin/firefox     ] && update-alternatives --set x-www-browser /usr/bin/firefox
+  [ -f /usr/bin/firefox-esr ] && update-alternatives --set gnome-www-browser /usr/bin/firefox-esr
+  [ -f /usr/bin/firefox     ] && update-alternatives --set gnome-www-browser /usr/bin/firefox
 
   apt-get --no-install-recommends --assume-yes install pidgin thunderbird >/dev/null
 }
