@@ -24,8 +24,12 @@ setup_disk
 setup_privacy
 setup_disable_features_services
 
+# FIXME: move to a locale function
 if ($env:SETUP_KEYMAP) {
-    Set-WinUserLanguageList -LanguageList "$env:SETUP_KEYMAP" -Force
+  Set-WinUserLanguageList -LanguageList "$env:SETUP_KEYMAP" -Force
+}
+if ($env:SETUP_TIMEZONE) {
+  Get-TimeZone -ListAvailable | ? DisplayName -like "*$env:SETUP_TIMEZONE*"| Set-TimeZone
 }
 
 if ($env:SETUP_VMACHINE) {
