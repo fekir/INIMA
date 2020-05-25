@@ -362,10 +362,20 @@ function setup_i_sidebar {
 }
 
 function setup_i_sound {
-  # set sound sheme to none
-  New-Item 'HKCU:\AppEvents\Schemes' -Force | New-ItemProperty -Value ".None" -Force | Out-Null
-  # disable changing sound (for example when new theme is selected)
-  New-Item 'HKCU:\Software\Policies\Microsoft\Windows\Personalization' -Force | New-ItemProperty -Name "NoChangingSoundScheme" -Value 1 -Force | Out-Null
+  reg load HKLM\defaultuser C:\Users\Default\NTUSER.DAT
+  $hks = @(
+    "HKCU:",
+    "HKLM:\defaultuser"
+  )
+  foreach ($hk in $hks) {
+    # set sound theme to none
+    New-Item "$hk\AppEvents\Schemes" -Force | New-ItemProperty -Value ".None" -Force | Out-Null
+    # disable changing sound (for example when new theme is selected)
+    New-Item "$hk\Software\Policies\Microsoft\Windows\Personalization" -Force | New-ItemProperty -Name "NoChangingSoundScheme" -Value 1 -Force | Out-Null
+  }
+  [gc]::Collect()
+  reg unload HKLM\defaultuser
+
   # disable startup sound
   New-Item 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication\LogonUI\BootAnimation' -Force | New-ItemProperty -Name "DisableStartupSound" -Value 1 -Force | Out-Null
 }
@@ -377,24 +387,27 @@ function setup_i_autocompl {
 }
 
 function setup_i_explorer {
-  # show hidden files
-  $explorerm = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
-  CondNewItem $explorerm | Out-Null
-  $exploreru = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
-  CondNewItem $exploreru | Out-Null
+  reg load HKLM\defaultuser C:\Users\Default\NTUSER.DAT
+  $explorer_advs = @( # FIXME: add all users
+    "HKLM:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced",
+    "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced",
+    "HKLM:\defaultuser\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
+  )
+  foreach ($explorer_adv in $explorer_advs) {
+    Write-Host "change $explorer_adv"
+    CondNewItem $explorer_adv | Out-Null
+    # show hidden files
+    New-ItemProperty -path $explorer_adv -Name "Hidden" -Value 1 -Force
+    attrib "$env:USERPROFILE\NTUSER.DAT" +s +h # except for this one
 
-  # show hidden files
-  New-ItemProperty -path $explorerm -Name "Hidden" -Value 1 -Force | Out-Null
-  New-ItemProperty -path $exploreru -Name "Hidden" -Value 1 -Force | Out-Null
-  attrib "$env:USERPROFILE\NTUSER.DAT" +s +h # except for this one
+    # show file extensions
+    New-ItemProperty -path $explorer_adv -Name "HideFileExt" -Value 0 -Force
 
-  # show file extensions
-  New-ItemProperty -path $explorerm -Name "HideFileExt" -Value 0 -Force | Out-Null
-  New-ItemProperty -path $exploreru -Name "HideFileExt" -Value 0 -Force | Out-Null
-
-  # default explorer to computer
-  Set-ItemProperty -path $exploreru -Name "LaunchTo" -Type DWord -Value 1 | Out-Null
-  Set-ItemProperty -path $explorerm -Name "LaunchTo" -Type DWord -Value 1 | Out-Null
+    # default explorer to computer
+    Set-ItemProperty -path $explorer_adv -Name "LaunchTo" -Type DWord -Value 1
+  }
+  [gc]::Collect()
+  reg unload HKLM\defaultuser
 
   # change desktop location
   #Set-ItemProperty -path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" -Name Desktop -Type ExpandString -value '%USERPROFILE%' | Out-Null
@@ -411,37 +424,54 @@ function setup_i_explorer {
 }
 
 function setup_i_colors {
+  reg load HKLM\defaultuser C:\Users\Default\NTUSER.DAT
+  $hks = @( # FIXME: add all users
+    "HKCU:",
+    "HKLM:\defaultuser"
+  )
+  foreach ($hk in $hks) {
+    # black for metro style
+    $registryPath = "$hk\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize"
+    CondNewItem $registryPath | Out-Null
+    New-ItemProperty -path $registryPath -Name "AppsUseLightTheme" -Value 0 -Force | Out-Null
+    New-ItemProperty -path $registryPath -Name "SystemUsesLightTheme" -Value 0 -Force | Out-Null
+
+    # gray for classic style
+    $registryPath = "$hk\Control Panel\Colors"
+    CondNewItem $registryPath | Out-Null
+    New-ItemProperty -path $registryPath -Name "Window" -Value "192 192 192" -Force | Out-Null
+
+    $registryPath = "$hk\Control Panel\Desktop\Colors"
+    CondNewItem $registryPath | Out-Null
+    New-ItemProperty -path $registryPath -Name "Window" -Value "192 192 192" -Force | Out-Null
+  }
+  [gc]::Collect()
+  reg unload HKLM\defaultuser
+
   # black for metro style
   $registryPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize"
   CondNewItem $registryPath | Out-Null
   New-ItemProperty -path $registryPath -Name "AppsUseLightTheme" -Value 0 -Force | Out-Null
   New-ItemProperty -path $registryPath -Name "SystemUsesLightTheme" -Value 0 -Force | Out-Null
-
-  $registryPath = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize"
-  CondNewItem $registryPath | Out-Null
-  New-ItemProperty -path $registryPath -Name "AppsUseLightTheme" -Value 0 -Force | Out-Null
-  New-ItemProperty -path $registryPath -Name "SystemUsesLightTheme" -Value 0 -Force | Out-Null
-
-  # gray for classic style
-  $registryPath = "HKCU:\Control Panel\Colors"
-  CondNewItem $registryPath | Out-Null
-  New-ItemProperty -path $registryPath -Name "Window" -Value "192 192 192" -Force | Out-Null
-
-  $registryPath = "HKCU:\Control Panel\Desktop\Colors"
-  CondNewItem $registryPath | Out-Null
-  New-ItemProperty -path $registryPath -Name "Window" -Value "192 192 192" -Force | Out-Null
 }
 
 function setup_i_taskbar {
-  $currentversion = "HKCU:\Software\Microsoft\Windows\CurrentVersion"
-  # hide search button
-  Set-ItemProperty -Path "$currentversion\Search" -Name "SearchboxTaskbarMode" -Type DWord -Value 0 | Out-Null
-  # remove virtual desktops button
-  Set-ItemProperty -Path "$currentversion\Explorer\Advanced" -Name "ShowTaskViewButton" -Type DWord -Value 0 | Out-Null
-  # show all icons in tray
-  Set-ItemProperty -Path "$currentversion\Explorer" -Name "EnableAutoTray" -Type DWord -Value 0 | Out-Null
-
-  # FIXME: remove edge
+  reg load HKLM\defaultuser C:\Users\Default\NTUSER.DAT
+  $currentversions = @(
+    "HKCU:\Software\Microsoft\Windows\CurrentVersion",
+    "HKLM:\defaultuser\Software\Microsoft\Windows\CurrentVersion"
+  )
+  foreach ($currentversion in $currentversions) {
+    # hide search button
+    Set-ItemProperty -Path "$currentversion\Search" -Name "SearchboxTaskbarMode" -Type DWord -Value 0 | Out-Null
+    # remove virtual desktops button
+    Set-ItemProperty -Path "$currentversion\Explorer\Advanced" -Name "ShowTaskViewButton" -Type DWord -Value 0 | Out-Null
+    # show all icons in tray
+    Set-ItemProperty -Path "$currentversion\Explorer" -Name "EnableAutoTray" -Type DWord -Value 0 | Out-Null
+    # FIXME: remove edge
+  }
+  [gc]::Collect()
+  reg unload HKLM\defaultuser
 }
 
 function setup_i_context_menu {
@@ -506,12 +536,21 @@ function setup_i_context_menu {
 }
 
 function setup_i_disable_autoplay {
-  Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\AutoplayHandlers" -Name "DisableAutoplay" -Type DWord -Value 1 | Out-Null
+  reg load HKLM\defaultuser C:\Users\Default\NTUSER.DAT
+  $currentversions = @(
+    "HKCU:\Software\Microsoft\Windows\CurrentVersion",
+    "HKLM:\defaultuser\Software\Microsoft\Windows\CurrentVersion"
+  )
+  foreach ($currentversion in $currentversions) {
+    Set-ItemProperty -Path "$currentversion\Explorer\AutoplayHandlers" -Name "DisableAutoplay" -Type DWord -Value 1 | Out-Null
 
-  # maybe not necessary
-  $registryPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer"
-  CondNewItem $registryPath | Out-Null
-  Set-ItemProperty -Path $registryPath -Name "NoDriveTypeAutoRun" -Type DWord -Value 255 | Out-Null
+    # maybe not necessary
+    $registryPath = "$currentversion\Policies\Explorer"
+    CondNewItem $registryPath | Out-Null
+    Set-ItemProperty -Path $registryPath -Name "NoDriveTypeAutoRun" -Type DWord -Value 255 | Out-Null
+  }
+  [gc]::Collect()
+  reg unload HKLM\defaultuser
 }
 
 function setup_theme {
