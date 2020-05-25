@@ -20,6 +20,41 @@ function CondNewItem([string] $item) {
   }
 }
 
+# list all hives
+function Get-ntuserdat() {
+  # https://www.pdq.com/blog/modifying-the-registry-of-another-user/
+  $PatternSID = 'S-1-5-21-\d+-\d+\-\d+\-\d+$'
+
+  # Get Username, SID, and location of ntuser.dat for all users
+  $ProfileList = Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\*' | Where-Object {$_.PSChildName -match $PatternSID} |
+    Select @{name="SID";expression={$_.PSChildName}},
+           @{name="UserHive";expression={"$($_.ProfileImagePath)\ntuser.dat"}},
+           @{name="Username";expression={$_.ProfileImagePath -replace '^(.*[\\\/])', ''}}
+
+  # Get all user SIDs found in HKEY_USERS (ntuder.dat files that are loaded)
+  $LoadedHives = Get-ChildItem Registry::HKEY_USERS | ? {$_.PSChildname -match $PatternSID} | Select @{name="SID";expression={$_.PSChildName}}
+
+  # Get all users that are not currently logged, FIXME: UserHive and UserName always empty
+  $UnloadedHives = Compare-Object $ProfileList.SID $LoadedHives.SID | Select @{name="SID";expression={$_.InputObject}}, UserHive, Username
+
+  $UnloadedHives = Get-ChildItem Registry::HKEY_USERS | ? { -Not ($_.PSChildname -match $PatternSID)} |
+    Select @{name="SID";expression={$_.PSChildName}},
+           @{name="UserHive";expression={"$($_.ProfileImagePath)\ntuser.dat"}},
+           @{name="Username";expression={$_.ProfileImagePath -replace '^(.*[\\\/])', ''}}
+
+
+  # also add default user
+  #$UnloadedHives += {{S-1-5-21-00000000-0000000000-0000000000-0000}, {}, {}} # ?????
+   # dummy sid for default user
+
+  return @($LoadedHives, $UnloadedHives) # FIXME: access is with [0] and [1] instead of .loaded and .unloaded
+}
+
+
+
+
+
+
 function setup_privacy {
   # settings -> privacy -> general -> let apps use my ID ...
   $advertising="HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\AdvertisingInfo";
