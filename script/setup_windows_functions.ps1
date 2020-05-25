@@ -128,6 +128,15 @@ function setup_disable_features_services {
   CondNewItem $datacollection | Out-Null
   New-ItemProperty -Path $datacollection -Name AllowTelemetry -Value 0 -Force | Out-Null
 
+  # handwriting data sharing
+  $tabletpc= "HKLM:\Software\Policies\Microsoft\Windows\TabletPC"
+  CondNewItem $tabletpc | Out-Null
+  New-ItemProperty -Path $tabletpc -Name PreventHandwritingDataSharing -Value 0 -Force | Out-Null
+
+  $cloudcontent = "HKLM\SOFTWARE\Policies\Microsoft\Windows\CloudContent"
+  CondNewItem $cloudcontent | Out-Null
+  New-ItemProperty -Path $cloudcontent -Name DisableSoftLanding -Value 1 -Force | Out-Null
+
   # Geo services
   Get-Service lfsvc,MapsBroker -ErrorAction SilentlyContinue | Stop-Service -PassThru | Set-Service -StartupType Disabled | Out-Null
 
@@ -158,15 +167,18 @@ function setup_disable_features_services {
 
   $people="HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\People"
   CondNewItem $people | Out-Null
-  Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\People" -Name "PeopleBand" -Type DWord -Value 0 | Out-Null
+  Set-ItemProperty -Path "$people" -Name "PeopleBand" -Type DWord -Value 0 | Out-Null
 
   # xbox, games
-  Get-Service XblAuthManager,XblGameSave,XboxNetApiSvc -ErrorAction SilentlyContinue | Stop-Service -PassThru | Set-Service -StartupType Disabled
-  $gamedvr = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\GameDVR"
+  Get-Service xbl*,xbox* -ErrorAction SilentlyContinue | Stop-Service -PassThru | Set-Service -StartupType Disabled | Out-Null
+  $gamedvr = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR"
   CondNewItem $gamedvr | Out-Null
-  Set-ItemProperty -Path $gamedvr -Name "AppCaptureEnabled" -Type DWord -Value 0 | Out-Null
-  Set-ItemProperty -Path "HKCU:\System\GameConfigStore" -Name "GameDVR_Enabled" -Type DWord -Value 0 | Out-Null
+  Set-ItemProperty -Path $gamedvr -Name "AllowgameDVR" -Type DWord -Value 0 | Out-Null
 
+  # Account
+  Get-Service tokenbroker -ErrorAction SilentlyContinue | Stop-Service -PassThru | Set-Service -StartupType Disabled | Out-Null
+  # onesync* cannot be disabled from service interface...
+  Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\OneSyncSvc" -Name "Start" -Type DWord -Value 4 | Out-NUll
 
   # 3rd party programs, and programs with no use
   Get-AppxPackage | where {$_.name -Match "officehub|skype|getstarted|zune|solitaire|twitter|candy|farmville|airborne|advertising|bing|people|phone|xbox|sway|pandora|adobe|eclipse|duolingo|speed|power|messaging|remote"} | Remove-AppxPackage -ErrorAction SilentlyContinue
