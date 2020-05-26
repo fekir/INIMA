@@ -12,6 +12,10 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
+
+# helper functions
+
+# create item if it does not exist
 function CondNewItem([string] $item) {
   # avoid creating unconditionally with -Force, as it will delete the content
   # use -Force to create folders recursively
@@ -142,7 +146,7 @@ function setup_disable_features_services {
   Get-WindowsCapability -Online | where { $_.Name -match "Hello.Face|InternetExplorer|Language.Handwriting|Language.OCR|Language.Speech|Language.TextToSpeech|MathRecognizer|Media.WindowsMediaPlayer|XPS" -and $_.State -eq "Installed"} | Remove-WindowsCapability -Online -ErrorAction SilentlyContinue | Out-Null
 
   # FIXME: seems to cause some issues during provisioning
-  #Get-WindowsOptionalFeature -Online | where { $_.FeatureName -match "XPS|LegacyComponents|DirectPlay" -and $_.State -eq "Enabled" } | Disable-WindowsOptionalFeature -Online -ErrorAction SilentlyContinue | Out-Null
+  #Get-WindowsOptionalFeature -Online | where { $_.FeatureName -match "LegacyComponents|DirectPlay" -and $_.State -eq "Enabled" } | Disable-WindowsOptionalFeature -Online -ErrorAction SilentlyContinue | Out-Null
 
   Get-AppxProvisionedPackage -Online | where { $_.PackageName -match "bing|getstarted|3DViewer|OfficeHub|Solitaire|MixedReality|People|Print3D|SkypeApp|Xbox|Zune" } | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
 
@@ -678,8 +682,7 @@ function setup_empty_recycle_bin {
   $objFolder.items() | %{ remove-item $_.path -Recurse -Confirm:$false}
 }
 
-function setup_rm_desktop_links
-{
+function setup_rm_desktop_links {
   # cannot add | Out-Null or result is empty
   $files = Get-ChildItem "$env:SYSTEMDRIVE\Users\*\Desktop\*" -filter "*.lnk" -force
   foreach ($link in $files) {
