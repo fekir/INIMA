@@ -468,7 +468,7 @@ function setup_vm {
 
   # Power,ndu service cannot be stopped, but can be disabled!
   Get-Service WlanSvc,WbioSrvc -ErrorAction SilentlyContinue | Stop-Service -PassThru | Set-Service -StartupType Disabled
-  Get-Service Power,ndu | Set-Service -StartupType Disabled
+  Get-Service Power,ndu -ErrorAction SilentlyContinue | Set-Service -StartupType Disabled
 
   # disable locking with <Win>+l
   $registryPath = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
