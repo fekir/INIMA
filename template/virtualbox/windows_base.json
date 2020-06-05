@@ -57,6 +57,7 @@
 				"SETUP_VMACHINE={{user `vmachine`}}",
 				"SETUP_CHOCO_PACKAGES={{user `choco_packages`}}",
 				"SETUP_CYGWIN_PACKAGES={{user `cygwin_packages`}}",
+				"SETUP_HARDENING={{user `hardening`}}",
 				"SETUP_CLEAN={{user `cleanup`}}",
 				"SETUP_LOCALE={{user `locale`}}",
 				"SETUP_KEYMAP={{user `keymap`}}",
@@ -90,6 +91,7 @@
 		"vmachine": "",
 		"choco_packages": "",
 		"cygwin_packages": "",
+		"hardening": "",
 		"cleanup": ""
 	}
 }

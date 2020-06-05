@@ -90,6 +90,9 @@ function setup_more_privacy {
 }
 
 function setup_hardening {
+  if ($env:SETUP_HARDENING -like '*disabled*') {
+    return;
+  }
   $policies_codeid="HKLM:\SOFTWARE\Policies\Microsoft\Windows\Safer\CodeIdentifiers\";
   New-ItemProperty -Path $policies_codeid -Name "authenticodeenabled" -Value 0 -Force | Out-Null
   New-ItemProperty -Path $policies_codeid -Name "DefaultLevel" -Value 262144 | Out-Null
@@ -137,6 +140,33 @@ function setup_hardening {
   # it might breaks installer (might need tmp (also needed by other programs like sysinternals) or other directories)
   # portable applications (could whiteliste a bin directory under user profile)
   # breaks "native" development
+
+  # change default file association to prevent execution
+  # files that also happens to be text, some like "Microsoft.PowerShellScript.1" already open by default in the text editor
+  if ($env:SETUP_HARDENING -like '*association*') {
+    $editor = "C:\Windows\System32\notepad.exe"
+    if ($env:SETUP_CHOCO_PACKAGES -like '*notepadplusplus*') {
+      $editor = "`"C:\Program Files\Notepad++\notepad++.exe`""
+    }
+    $filetypes = @("batfile", "regfile", "JSFile", "htafile", "WSFFile", "VBSFile", "VBEFile");
+    foreach ($filetype in $filetypes) {
+      $key_run = (Join-Path (Join-Path Registry::HKEY_CLASSES_ROOT $filetype) shell\Run);
+      if (Test-Path $key_run) {
+        continue;
+      }
+      $key_open = (Join-Path (Join-Path Registry::HKEY_CLASSES_ROOT $filetype) shell\open);
+      Rename-Item -Path "$key_open" -NewName "Run";
+      $key_open_command = (Join-Path $key_open command);
+      New-Item -Force $key_open_command;
+      Set-ItemProperty -Path "$key_open_command" -name '(Default)' -Value "$editor `"%1`"";
+
+      $key_edit_command = (Join-Path (Join-Path Registry::HKEY_CLASSES_ROOT $filetype) shell\edit\command);
+      if (Test-Path $key_edit_command) {
+        Copy-Item -Path "$key_edit_command" -Destination "$key_open"
+      }
+    }
+  }
+  # other interesting entries: "comfile", "Msi.Package", "exefile"
 }
 
 function setup_disable_features_services {

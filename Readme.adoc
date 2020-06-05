@@ -69,6 +69,7 @@ Supported parameters are:
 	- lc_time: time format of the virtual machine, formats are host-specific (not currently supported on Windows)
 	- timezone: timezone of the virtual machine, formats are in the form "area/zone" (host-specific, for example Berlin on Debian is "Europe/Berlin")
 	- cleanup: if at the end of the setup we need to clean as much as possible to reduce space requirements. This passage can be time consuming.
+	- hardening: this option is present only on windows, it hardens the system but might break some programs. Valid options are "disable" or (comma-separated) "association". If not disabled, doulbe common extensions are blacklisted.
 
 The list might not be complete, and some parameter might be available only on some provisioner/gest OS.
 
