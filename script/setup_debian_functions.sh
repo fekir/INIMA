@@ -42,24 +42,38 @@ setup_sources(){
 setup_installer_minimal(){
   #https://wiki.ubuntu.com/ReducingDiskFootprint#Documentation
   {
-    printf 'path-exclude /usr/share/doc/*\n';
-    printf 'path-exclude /usr/share/doc-base/*\n';
-    printf 'path-exclude /usr/share/common-licenses/*\n';
-    # unless redistribuiting the machine, we do not need to keep copyright files
-    printf 'path-include /usr/share/doc/*/copyright';
-    printf 'path-exclude /usr/share/man/*';
-    printf 'path-exclude /usr/share/man-db/*';
-    printf 'path-exclude /usr/share/groff/*';
-    printf 'path-exclude /usr/share/info/*';
-    printf 'path-exclude /usr/share/linda/*';
-    printf 'path-exclude /usr/share/lintian/*';
-    printf 'path-exclude /usr/share/locale/*';
-    printf 'path-exclude /usr/lib/modules/*/kernel/drivers/net/wireless/*';
+    printf 'path-exclude /usr/share/locale\n';
+    printf 'path-include /usr/share/locale/en*\n';
+
+    printf 'path-exclude /usr/share/doc\n';
+    printf 'path-exclude /usr/share/doc-base\n';
+    # unless redistribuiting the machine,
+    # we do not need to keep copyright files, if yes
+    # uncomment following line
+    #printf 'path-include /usr/share/doc/*/copyright\n';
+
+    printf 'path-exclude /usr/share/common-licenses\n';
+
+    printf 'path-exclude /usr/share/man\n';
+    printf 'path-exclude /usr/share/man-db\n';
+
+    printf 'path-exclude /usr/share/groff\n';
+    printf 'path-exclude /usr/share/info\n';
+    printf 'path-exclude /usr/share/linda\n';
+    printf 'path-exclude /usr/share/lintian\n';
+
+    printf 'path-exclude /usr/share/aptitude/README.*\n'
+    printf 'path-exclude /usr/share/aptitude/aptitude-defaults.*\n'
+    printf 'path-exclude /usr/share/aptitude/*help*txt\n'
+
+    printf 'path-exclude /usr/share/nvim/runtime/doc\n'
+
+    printf 'path-exclude /usr/lib/modules/*/kernel/drivers/net/wireless/*\n';
   }>"/etc/dpkg/dpkg.cfg.d/01-no-doc-license-locale"
 
   {
-    printf 'Acquire::GzipIndexes "true";printf '
-    printf 'Acquire::CompressionTypes::Order:: "gz";printf '
+    printf 'Acquire::GzipIndexes "true";printf\n'
+    printf 'Acquire::CompressionTypes::Order:: "gz";printf\n'
   }>"/etc/apt/apt.conf.d/00-compress-indexes"
 }
 
