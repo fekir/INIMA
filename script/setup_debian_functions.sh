@@ -348,9 +348,10 @@ setup_cleanup_aggressive(){
   rm -rf /usr/share/lintian/;
   rm -rf /usr/share/man/;
   rm -rf /usr/share/man-db/;
-  find /usr/share -type d -name man  -exec rm -rf {} +;
+  find /usr/share -type d -name man -exec rm -rf {} +;
   # removing entirely causes issues.. would be nice if there is something like localepurge for it... hardlink did not make any difference
   #rm -rf /usr/share/zoneinfo/;
+  find / -type f -name "*.py[co]" -delete -or -type d -name "__pycache__" -delete;
 
   hardlink /usr/share/; # might break something when upgrading, but when there be dragons when removing/"editing" data from /usr/share 
 
