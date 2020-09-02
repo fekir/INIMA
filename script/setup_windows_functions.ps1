@@ -129,7 +129,7 @@ function setup_hardening {
       $guid = "{"+(New-Guid).guid+"}"
       $path = "$policies_codeid\0\Paths\$guid"; # disallowed=0, Unrestricted=262144
       New-Item $path -Force | Out-Null
-      New-ItemProperty -Path $path -Name "Description" -Value "INIMA" | Out-Null
+      New-ItemProperty -Path $path -Name "Description" -Value "INIMA, disable common double-extension" | Out-Null
       New-ItemProperty -Path $path -Name "SaferFlags" -Value 0 | Out-Null
       New-ItemProperty -Path $path -Name "Name" -Value "name" | Out-Null
       New-ItemProperty -Path $path -Name "ItemData" -Value "*.$cex.$ext" | Out-Null
@@ -141,9 +141,10 @@ function setup_hardening {
   # portable applications (could whiteliste a bin directory under user profile)
   # breaks "native" development
 
+
   # change default file association to prevent execution
   # files that also happens to be text, some like "Microsoft.PowerShellScript.1" already open by default in the text editor
-  if ($env:SETUP_HARDENING -like '*association*') {
+  if ($env:SETUP_HARDENING -like '*changeassociation*') {
     $editor = "C:\Windows\System32\notepad.exe"
     if ($env:SETUP_CHOCO_PACKAGES -like '*notepadplusplus*') {
       $editor = "`"C:\Program Files\Notepad++\notepad++.exe`""
@@ -883,7 +884,7 @@ function setup_i_conf_npp {
   Set-ItemProperty -Path "$key" -name '(Default)' -Value "$editor `"%1`""
 
   # set default editor for already known extual files
-  $filetypes = @("txtfile", "inifile", "xmlfile")
+  $filetypes = @("txtfile", "inifile", "xmlfile") # batfile, Microsoft.PowerShellScript.1, JSFile
   foreach ($filetype in $filetypes) {
     $key = (Join-Path (Join-Path Registry::HKEY_CLASSES_ROOT $filetype) shell\open\command)
     CondNewItem $key | Out-Null
