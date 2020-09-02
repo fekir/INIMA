@@ -160,10 +160,12 @@ function setup_disable_features_services {
 
   Get-Service HomeGroupListener,HomeGroupProvider -ErrorAction SilentlyContinue | Stop-Service -PassThru | Set-Service -StartupType Disabled
 
-  # diagnostic
+  # diagnostic, telemetry, ....
   Get-Service Dmwappushservice -ErrorAction SilentlyContinue | Stop-Service -PassThru | Set-Service -StartupType Disabled
-  New-ItemProperty  "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection" -Name AllowTelemetry -Type DWORD -Value 0 -Force -ErrorAction SilentlyContinue | Out-Null
-  New-ItemProperty  "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Policies\DataCollection" -Name AllowTelemetry -Type DWORD -Value 0 -Force -ErrorAction SilentlyContinue | Out-Null
+  New-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection" -Name AllowTelemetry -Type DWORD -Value 0 -Force -ErrorAction SilentlyContinue | Out-Null
+  New-ItemProperty "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Policies\DataCollection" -Name AllowTelemetry -Type DWORD -Value 0 -Force -ErrorAction SilentlyContinue | Out-Null
+
+  New-ItemProperty "HKLM:\Software\Policies\Microsoft\VisualStudio\SQM" -Name OptIn -Value 0 -Force -ErrorAction SilentlyContinue | Out-Null
 
   $people="HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\People"
   CondNewItem $people | Out-Null
@@ -174,6 +176,10 @@ function setup_disable_features_services {
   $gamedvr = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR"
   CondNewItem $gamedvr | Out-Null
   Set-ItemProperty -Path $gamedvr -Name "AllowgameDVR" -Type DWord -Value 0 | Out-Null
+  $gamedvr = "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR"
+  CondNewItem $gamedvr | Out-Null
+  Set-ItemProperty -Path $gamedvr -Name "AppCaptureEnabled" -Type DWord -Value 0 | Out-Null
+  Set-ItemProperty -Path $gamedvr -Name "HistoricalCaptureEnabled" -Type DWord -Value 0 | Out-Null
 
   # Account
   Get-Service tokenbroker -ErrorAction SilentlyContinue | Stop-Service -PassThru | Set-Service -StartupType Disabled | Out-Null
@@ -348,6 +354,8 @@ function setup_i_explorer {
   #Remove-Item "$env:USERPROFILE\3D Objects" -Force -Recurse -ErrorAction SilentlyContinue
   # if it causes problems, or those folders get recreated, hide them (unfortunately we wont notice if they are used...)
   #attrib "$env:USERPROFILE\Desktop" +s +h | Out-Null
+
+  reg delete 'HKEY_CLASSES_ROOT\*\shellex\ContextMenuHandlers\ModernSharing' /f | Out-Null # remove share option
 }
 
 function setup_i_colors {
