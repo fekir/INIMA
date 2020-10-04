@@ -3,6 +3,7 @@
 
 # File that needs crlf as line break to work
 *.bat eol=crlf
+*.cmd eol=crlf
 
 # File that needs lf as line break to work
 *.ps1 eol=lf
