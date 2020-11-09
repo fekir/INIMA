@@ -95,12 +95,15 @@ function setup_hardening {
   }
 
   # https://support.microsoft.com/en-us/help/4586060/option-to-disable-jscript-execution
+  # https://support.microsoft.com/en-us/help/4012494/option-to-disable-vbscript-execution-in-internet-explorer-for-internet
   $internet_zone="HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Internet Settings\Zones\3"
   CondNewItem $internet_zone | Out-Null
   New-ItemProperty -Path $internet_zone -Name "140D" -Value 3 -Force | Out-Null
+  New-ItemProperty -Path $internet_zone -Name "140C" -Value 3 -Force | Out-Null
   $restricted_zone="HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Internet Settings\Zones\4"
   CondNewItem $restricted_zone | Out-Null
   New-ItemProperty -Path $restricted_zone -Name "140D" -Value 3 -Force | Out-Null
+  New-ItemProperty -Path $restricted_zone -Name "140C" -Value 3 -Force | Out-Null
 
   $policies_codeid="HKLM:\SOFTWARE\Policies\Microsoft\Windows\Safer\CodeIdentifiers\";
   New-ItemProperty -Path $policies_codeid -Name "authenticodeenabled" -Value 0 -Force | Out-Null
