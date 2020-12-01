@@ -180,6 +180,21 @@ function setup_hardening {
     }
   }
   # other interesting entries: "comfile", "Msi.Package", "exefile"
+
+  if ($env:SETUP_HARDENING -like '*disablex86*') {
+    $x86paths=@(
+      "C:\Program Files (x86)", "C:\Windows\SysWOW64"
+    )
+    foreach ($x86path in $x86paths) {
+      $guid = "{"+(New-Guid).guid+"}"
+      $path = "$policies_codeid\0\Paths\$guid"; # disallowed=0, Unrestricted=262144
+      New-Item $path -Force | Out-Null
+      New-ItemProperty -Path $path -Name "Description" -Value "INIMA, disable x86" | Out-Null
+      New-ItemProperty -Path $path -Name "SaferFlags" -Value 0 | Out-Null
+      New-ItemProperty -Path $path -Name "Name" -Value "name" | Out-Null
+      New-ItemProperty -Path $path -Name "ItemData" -Value "$x86path" | Out-Null
+    }
+  }
 }
 
 function setup_disable_features_services {
