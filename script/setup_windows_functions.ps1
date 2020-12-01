@@ -33,11 +33,11 @@ function setup_privacy {
   New-Item 'HKCU:\Control Panel\International\User Profile' -Force | New-ItemProperty -Name HttpAcceptLanguageOptOut -Value 1 -Force | Out-Null
 
   # settings -> privacy -> general -> speech, inking, & typing
-  $personalization="HKCU:\SOFTWARE\Microsoft\InputPersonalization";
+  $personalization="HKLM:\SOFTWARE\Policies\Microsoft\InputPersonalization";
   CondNewItem $personalization | Out-Null;
   New-ItemProperty -Path $personalization -Name RestrictImplicitTextCollection -Value 1 -Force | Out-Null
   New-ItemProperty -Path $personalization -Name RestrictImplicitInkCollection -Value 1 -Force | Out-Null
-  New-ItemProperty -Path $personalization -Name  -Value 1 -Force | Out-Null
+  $personalization="HKCU:\SOFTWARE\Microsoft\InputPersonalization";
   New-ItemProperty -Path "$personalization\TrainedDataStore" -Name HarvestContacts -Value 0 -Force | Out-Null
   $personalization="HKCU:\SOFTWARE\Microsoft\Personalization\Settings";
   New-ItemProperty -Path "$personalization" -Name AcceptedPrivacyPolicy -Value 0 -Force | Out-Null
