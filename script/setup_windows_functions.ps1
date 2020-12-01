@@ -21,19 +21,30 @@ function CondNewItem([string] $item) {
 }
 
 function setup_privacy {
-# settings -> privacy -> general -> let apps use my ID ...
-reg add HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\AdvertisingInfo\ /v Enabled /t REG_DWORD /d 0 /f
-reg delete HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\AdvertisingInfo\ /v Id /f
-reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\AdvertisingInfo\ /v Enabled /t REG_DWORD /d 0 /f
+  # settings -> privacy -> general -> let apps use my ID ...
+  $advertising="HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\AdvertisingInfo";
+  CondNewItem $advertising | Out-Null;
+  New-ItemProperty -Path $advertising -Name "Enabled" -Value 0 -Force | Out-Null;
+  Remove-ItemProperty -Path $advertising -Name "Id" -Force | Out-Null;
 
-# settings -> privacy -> general -> let websites provide locally ...
-reg add "HKCU\Control Panel\International\User Profile\ /v HttpAcceptLanguageOptOut" /t REG_DWORD /d 1 /f
+  $advertising="HKLM:\Software\Policies\Microsoft\Windows\AdvertisingInfo"
+  CondNewItem $advertising | Out-Null;
+  New-ItemProperty -Path $advertising -Name "DisabledByGroupPolicy" -Value 1 -Force | Out-Null
 
-# settings -> privacy -> general -> speech, inking, & typing
-reg add HKCU\SOFTWARE\Microsoft\InputPersonalization\ /v RestrictImplicitTextCollection /t REG_DWORD /d 1 /f
-reg add HKCU\SOFTWARE\Microsoft\InputPersonalization\ /v RestrictImplicitInkCollection /t REG_DWORD /d 1 /f
-reg add HKCU\SOFTWARE\Microsoft\InputPersonalization\TrainedDataStore\ /v HarvestContacts /t REG_DWORD /d 0 /f
-reg add HKCU\SOFTWARE\Microsoft\Personalization\Settings\ /v AcceptedPrivacyPolicy /t REG_DWORD /d 0 /f
+  # settings -> privacy -> general -> let websites provide locally ...
+  $userprofile="HKCU:\Control Panel\International\User Profile";
+  CondNewItem $userprofile | Out-Null
+  New-ItemProperty -Path $userprofile -Name HttpAcceptLanguageOptOut -Value 1 -Force | Out-Null
+
+  # settings -> privacy -> general -> speech, inking, & typing
+  $personalization="HKCU:\SOFTWARE\Microsoft\InputPersonalization";
+  CondNewItem $personalization | Out-Null;
+  New-ItemProperty -Path $personalization -Name RestrictImplicitTextCollection -Value 1 -Force | Out-Null
+  New-ItemProperty -Path $personalization -Name RestrictImplicitInkCollection -Value 1 -Force | Out-Null
+  New-ItemProperty -Path $personalization -Name  -Value 1 -Force | Out-Null
+  New-ItemProperty -Path "$personalization\TrainedDataStore" -Name HarvestContacts -Value 0 -Force | Out-Null
+  $personalization="HKCU:\SOFTWARE\Microsoft\Personalization\Settings";
+  New-ItemProperty -Path "$personalization" -Name AcceptedPrivacyPolicy -Value 0 -Force | Out-Null
 }
 
 function setup_more_privacy {
@@ -364,7 +375,7 @@ function setup_i_explorer {
   # if it causes problems, or those folders get recreated, hide them (unfortunately we wont notice if they are used...)
   #attrib "$env:USERPROFILE\Desktop" +s +h | Out-Null
 
-  reg delete 'HKEY_CLASSES_ROOT\*\shellex\ContextMenuHandlers\ModernSharing' /f | Out-Null # remove share option
+  Remove-ItemProperty -Path 'HKEY_CLASSES_ROOT\*\shellex\ContextMenuHandlers\ModernSharing' -Recurse -Force | Out-Null; # remove share option
 }
 
 function setup_i_colors {
