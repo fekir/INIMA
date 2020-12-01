@@ -27,14 +27,10 @@ function setup_privacy {
   New-ItemProperty -Path $advertising -Name "Enabled" -Value 0 -Force | Out-Null;
   Remove-ItemProperty -Path $advertising -Name "Id" -Force | Out-Null;
 
-  $advertising="HKLM:\Software\Policies\Microsoft\Windows\AdvertisingInfo"
-  CondNewItem $advertising | Out-Null;
-  New-ItemProperty -Path $advertising -Name "DisabledByGroupPolicy" -Value 1 -Force | Out-Null
+  New-Item 'HKLM:\Software\Policies\Microsoft\Windows\AdvertisingInfo' -Force | New-ItemProperty -Name DisabledByGroupPolicy -Value 1 -Force | Out-Null
 
   # settings -> privacy -> general -> let websites provide locally ...
-  $userprofile="HKCU:\Control Panel\International\User Profile";
-  CondNewItem $userprofile | Out-Null
-  New-ItemProperty -Path $userprofile -Name HttpAcceptLanguageOptOut -Value 1 -Force | Out-Null
+  New-Item 'HKCU:\Control Panel\International\User Profile' -Force | New-ItemProperty -Name HttpAcceptLanguageOptOut -Value 1 -Force | Out-Null
 
   # settings -> privacy -> general -> speech, inking, & typing
   $personalization="HKCU:\SOFTWARE\Microsoft\InputPersonalization";
