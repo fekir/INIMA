@@ -144,10 +144,16 @@ function setup_disable_features_services {
   Get-Service WSearch -ErrorAction SilentlyContinue | Stop-Service -PassThru | Set-Service -StartupType Disabled | Out-Null
   $wsearchsettings = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search"
   CondNewItem $wsearchsettings | Out-Null
+  Set-ItemProperty -Path $wsearchsettings -Name "AllowCloudSearch" -Value 0 | Out-Null
+  Set-ItemProperty -Path $wsearchsettings -Name "AllowCortanaAboveLock" -Value 0 | Out-Null
   Set-ItemProperty -Path $wsearchsettings -Name "AllowCortana" -Value 0 | Out-Null
-  Set-ItemProperty -Path $wsearchsettings -Name "ConnectedSearchUseWeb" -Value 1 | Out-Null
-  Set-ItemProperty -Path $wsearchsettings -Name "ConnectedSearchUseWebOverMeteredCOnnections" -Value 1 | Out-Null
+  Set-ItemProperty -Path $wsearchsettings -Name "AllowCortanaInAAD" -Value 0 | Out-Null
+  Set-ItemProperty -Path $wsearchsettings -Name "AllowIndexingEncryptedStoresOrItems" -Value 0 | Out-Null
+  Set-ItemProperty -Path $wsearchsettings -Name "AllowSearchToUseLocation" -Value 0 | Out-Null
+  Set-ItemProperty -Path $wsearchsettings -Name "ConnectedSearchUseWeb" -Value 0 | Out-Null
+  Set-ItemProperty -Path $wsearchsettings -Name "ConnectedSearchUseWebOverMeteredCOnnections" -Value 0 | Out-Null
   Set-ItemProperty -Path $wsearchsettings -Name "DisableWebSearch" -Value 1 | Out-Null
+  Set-ItemProperty -Path $wsearchsettings -Name "PreventIndexOnBattery" -Value 1 | Out-Null
 
 
   $wsearchsettings = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search"
