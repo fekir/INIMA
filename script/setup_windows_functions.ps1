@@ -162,6 +162,9 @@ function setup_disable_features_services {
   New-ItemProperty "$wsearchsettings" -Name "BingSearchEnabled" -Value 0 -Type DWORD -Force -ErrorAction SilentlyContinue | Out-Null
   New-ItemProperty "$wsearchsettings" -Name "CortanaConstent" -Value 0 -Type DWORD -Force -ErrorAction SilentlyContinue | Out-Null
 
+  # online tips
+  Set-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name AllowOnlineTips -Value 0 -Force | Out-Null
+
   Get-Service SysMain -ErrorAction SilentlyContinue | Stop-Service -PassThru | Set-Service -StartupType Disabled
 
   Get-Service HomeGroupListener,HomeGroupProvider -ErrorAction SilentlyContinue | Stop-Service -PassThru | Set-Service -StartupType Disabled
