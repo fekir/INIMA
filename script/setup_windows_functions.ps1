@@ -196,6 +196,7 @@ function setup_disable_features_services {
   CondNewItem $gamedvr | Out-Null
   Set-ItemProperty -Path $gamedvr -Name "AppCaptureEnabled" -Type DWord -Value 0 | Out-Null
   Set-ItemProperty -Path $gamedvr -Name "HistoricalCaptureEnabled" -Type DWord -Value 0 | Out-Null
+  New-Item 'HKCU:\System\GameConfigStore' -Force | New-ItemProperty -Name GameDVR_Enabled -Type DWord -Value 0 -Force | Out-Null
 
   # Account
   Get-Service tokenbroker -ErrorAction SilentlyContinue | Stop-Service -PassThru | Set-Service -StartupType Disabled | Out-Null
