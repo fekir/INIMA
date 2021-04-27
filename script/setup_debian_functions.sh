@@ -208,6 +208,7 @@ setup_disable_sudo_pwd(){
   # FIXME: create new file, and use visudo for checking
   printf "%s ALL=(ALL) NOPASSWD:ALL\n" "$SSH_USERNAME" > /tmp/sudoers_user;
   chmod 0440 /tmp/sudoers_user
+  visudo --check --file /tmp/sudoers_user;
   mv /tmp/sudoers_user "/etc/sudoers.d/$SSH_USERNAME"
   # https://askubuntu.com/questions/98006/how-do-i-prevent-policykit-from-asking-for-a-password
 }
