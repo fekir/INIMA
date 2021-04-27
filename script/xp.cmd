@@ -1,10 +1,14 @@
 @echo off
 
-:: as the machine is not connected to internet
-reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\WPAEvents" /v OOBETimer /t REG_BINARY /d "ffd571d68b6a8d6fd53393fd" /f >NUL
-echo HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\WPAEvents [8]>regini.ini
-regini regini.ini
-del regini.ini
+:: as the machine is not connected to internet/official activation is no longer possible
+::reg add "HKLM\Software\Microsoft\Windows NT\CurrentVersion\WPAEvents" /v OOBETimer /t REG_BINARY /d "ffd571d68b6a8d6fd53393fd" /f >NUL
+::echo HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\WPAEvents [8]>regini.ini
+::regini regini.ini
+::del regini.ini
+
+::https://superuser.com/questions/1502796/how-do-i-activate-windowsxp-now-that-support-has-ended/1502890#1502890
+reg del "HKLM\Software\Microsoft\Windows NT\CurrentVersion\WPAEvents\OOBETimer"
+msoobe /a
 
 :: automatic login
 reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v LogonType /t REG_SZ /d "0" /f >NUL
