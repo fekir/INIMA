@@ -934,10 +934,16 @@ function setup_i_conf_npp {
   Set-ItemProperty -Path "$key" -name '(Default)' -Value "$editor"
 }
 
+function setup_shell {
+  Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine -Force;
+  #Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope UserPolicy -Force;
+  if (!(Test-Path $profile)) { New-Item -path $profile -type file -force | Out-Null };
+  # FIXME: test if already present
+  Add-Content $profile "Set-PSReadLineOption -EditMode Emacs;";
+}
+
 function setup_install_choco {
-  If (!(Test-Path -PathType Leaf $PROFILE)) {
-    New-Item $PROFILE -ItemType File -Force | Out-Null;
-  }
+  setup_shell
   iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
   choco feature enable -n allowGlobalConfirmation
 
