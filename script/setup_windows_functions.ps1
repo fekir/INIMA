@@ -237,7 +237,7 @@ function setup_disable_features_services {
   CondNewItem $tabletpc | Out-Null
   New-ItemProperty -Path $tabletpc -Name PreventHandwritingDataSharing -Value 0 -Force | Out-Null
 
-  $cloudcontent = "HKLM\SOFTWARE\Policies\Microsoft\Windows\CloudContent"
+  $cloudcontent = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent"
   CondNewItem $cloudcontent | Out-Null
   New-ItemProperty -Path $cloudcontent -Name DisableSoftLanding -Value 1 -Force | Out-Null
 
@@ -524,6 +524,8 @@ function setup_i_taskbar {
     "HKLM:\defaultuser\Software\Microsoft\Windows\CurrentVersion"
   )
   foreach ($currentversion in $currentversions) {
+    CondNewItem "$currentversion\Search"
+    CondNewItem "$currentversion\Explorer\Advanced"
     # hide search button
     Set-ItemProperty -Path "$currentversion\Search" -Name "SearchboxTaskbarMode" -Type DWord -Value 0 | Out-Null
     # remove virtual desktops button
