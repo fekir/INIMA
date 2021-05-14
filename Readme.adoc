@@ -42,6 +42,44 @@ packer build template/virtualbox/windows_setup.json
 vboxmanage import out/virtualbox/windows_setup/windows.ovf
 ----
 
+Pro tip: create a config file like
+
+[source, json]
+----
+{
+	"cpus": "2",
+	"disk_size": "65536",
+	"memory": "2048",
+	"vram": "32",
+	"headless": "true",
+	"iso_checksum": "b58b06599830583594288cc779d93c7f8abaa685",
+	"iso_checksum_type": "sha1",
+	"iso_url": "/home/df0/Software/windows/microsoft/windows/en_windows_10_consumer_editions_version_20h2_updated_dec_2020_x64_dvd_bde6c5a2.iso",
+	"preseed": "./bootstrap/Autounattend.xml",
+	"password": "123456",
+	"username": "admin",
+	"version": "0.1.0",
+	"vm_name": "windows10",
+	"guest_os_type": "Windows10_64",
+	"locale": "en_US",
+	"lc_time": "",
+	"keymap": "it-IT",
+	"timezone": "Berlin",
+	"vmachine": "",
+	"choco_packages": "",
+	"cygwin_packages": "",
+	"hardening": "association",
+	"cleanup": ""
+}
+----
+
+and use `-on-error=ask` when experimenting:
+
+[source, sh]
+----
+packer build -on-error=ask -var-file=./template/windows_base-10.json template/virtualbox/windows_base.json
+----
+
 == Customize environments
 If you want to customize the environment, you should primarily look inside the `script` directory.
 Template and Bootstrap files are as minimal as possible, in order to not depend on a particular configuration or tool.
