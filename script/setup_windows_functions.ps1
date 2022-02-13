@@ -738,6 +738,31 @@ function setup_i_conf_npp {
   Set-ItemProperty -Path "$key" -name '(Default)' -Value "$editor"
 }
 
+function setup_i_conf_third_party(){
+  # Disable TIP of VS
+  $paths = @(
+    "HKLM:\Software\Policies\Microsoft\VisualStudio"
+    "HKLM:\SOFTWARE\Wow6432Node\Microsoft\VSCommon\16.0\SQM"
+    "HKLM:\SOFTWARE\Microsoft\VSCommon\16.0\SQM"
+  )
+  foreach ($path in $paths) {
+    CondNewItem $path | Out-Null
+    New-ItemProperty -Path $path -Name "OptIn" -Value 0 -Force | Out-Null
+  }
+
+  # Accept Sysinternals eula
+  $paths = @(
+    "HKCU\Software\Sysinternals"
+    "HKCU\Software\System Internals"
+    "HKLM\Software\Sysinternals"
+    "HKLM\Software\System Internals"
+  )
+  foreach ($path in $paths) {
+    CondNewItem $path | Out-Null
+    New-ItemProperty -Path $path -Name "EulaAccepted" -Value 1 -Force | Out-Null
+  }
+}
+
 function setup_install_choco {
   If (!(Test-Path -PathType Leaf $PROFILE)) {
     New-Item $PROFILE -ItemType File -Force | Out-Null;

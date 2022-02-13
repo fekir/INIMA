@@ -105,3 +105,5 @@ reg add "HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v No
 
 reg add "HKCU\Software\System Internals" /v EulaAccepted /t REG_DWORD /d 1 /f >NUL
 reg add "HKCU\Software\Sysinternals"     /v EulaAccepted /t REG_DWORD /d 1 /f >NUL
+reg add "HKLM\Software\System Internals" /v EulaAccepted /t REG_DWORD /d 1 /f >NUL
+reg add "HKLM\Software\Sysinternals"     /v EulaAccepted /t REG_DWORD /d 1 /f >NUL
