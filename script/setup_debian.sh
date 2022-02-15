@@ -19,6 +19,8 @@ set -eu
 DEBIAN_FRONTEND="noninteractive"
 export DEBIAN_FRONTEND
 
+export PYTHONDONTWRITEBYTECODE="disable"
+
 . /tmp/setup_debian_functions.sh
 
 if [ "$SETUP_CLEAN" = "true" ]; then

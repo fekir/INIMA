@@ -14,6 +14,8 @@
 
 . "C:/Windows/Temp/setup_windows_functions.ps1"
 
+$env:PYTHONDONTWRITEBYTECODE = "disable"
+
 # speed setup process up
 setup_disable_defender_until_reboot
 setup_disable_updates_until_reboot
