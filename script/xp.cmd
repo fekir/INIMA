@@ -22,6 +22,9 @@ sc stop "audiosrv" >NUL
 sc config "wzcsvc" start= disabled >NUL
 sc stop "wzcsvc" >NUL
 
+:: stop cache
+reg add "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v DisableThumbnailCache /t REG_DWORD /d 1 /f >NUL
+
 :: set theme
 :: install zune before (probably it's possible to just hack the registry keys together)
 sc config "themes" start= disabled >NUL

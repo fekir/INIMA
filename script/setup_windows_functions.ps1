@@ -235,6 +235,16 @@ function setup_disable_features_services {
   CondNewItem $explorer | Out-Null
   Set-ItemProperty -Path $explorer -Name "NoUseStoreOpenWith" -Type DWord -Value 1 | Out-Null
 
+
+  # disable thumbs.db on network shares
+  $path = "HKCU:\Software\Policies\Microsoft\Windows\Explorer"
+  CondNewItem $path | Out-Null
+  Set-ItemProperty -Path $path -Name "DisableThumbsDBOnNetworkFolders" -Type DWord -Value 1 | Out-Null
+
+  $path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer"
+  CondNewItem $path | Out-Null
+  Set-ItemProperty -Path $path -Name "NoThumbnailCache" -Type DWord -Value 1 | Out-Null
+  Set-ItemProperty -Path $path -Name "DisableThumbnailCache" -Type DWord -Value 1 | Out-Null
 }
 
 function setup_disk {
