@@ -773,6 +773,56 @@ function setup_i_conf_third_party(){
   }
 }
 
+function setup_powershell{
+
+  $profiles = @(
+    $PROFILE.AllUsersAllHosts
+    $PROFILE.CurrentUserAllHosts
+  )
+
+  foreach ($p in $profiles) {
+    Set-Content $p 'Set-PSReadLineOption -EditMode Emacs;
+
+# Clipboard interaction is bound by default in Windows mode, but not Emacs mode.
+Set-PSReadLineKeyHandler -Key Ctrl+Shift+C -Function Copy
+Set-PSReadLineKeyHandler -Key Ctrl+Shift+V -Function Paste
+
+
+Remove-Item -ErrorAction SilentlyContinue Alias:ls
+function ls([string] $dir=".") { (Get-ChildItem $dir).Name; }
+Set-Alias -Name ll -Value Get-ChildItem
+Set-Alias -Name l -Value ls
+function la { (Get-ChildItem -Force).Name; }
+
+Remove-Item -ErrorAction SilentlyContinue Alias:pwd
+function pdw { (Get-Location).Path; }
+
+if(Get-Command "nvim" -ErrorAction SilentlyContinue){
+	Set-Alias -Name vim -Value nvim
+	Set-Alias -Name vi  -Value nvim
+	Set-Alias -Name e   -Value nvim
+}elseif(Get-Command "vim" -ErrorAction SilentlyContinue){
+	Set-Alias -Name vi  -Value vim
+	Set-Alias -Name e   -Value vim
+}elseif(Get-Command "vi" -ErrorAction SilentlyContinue){
+	Set-Alias -Name e   -Value vi
+}
+
+if(Get-Command "notepad++" -ErrorAction SilentlyContinue){
+	Set-Alias -Name npp -Value "notepad++"
+}
+
+function touch([string] $filename){ if (!(Test-Path $filename)) { New-Item -Path $filename -ItemType File }; }
+
+function prompt {
+	$esc = [char]27
+	return "$esc[32m$env:UserName $esc[34m" + "$pwd ".Replace("$home", "~").Replace("\", "/") + "$esc[0m > "
+}
+';
+  }
+
+}
+
 function setup_install_choco {
   If (!(Test-Path -PathType Leaf $PROFILE)) {
     New-Item $PROFILE -ItemType File -Force | Out-Null;
