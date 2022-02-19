@@ -140,7 +140,7 @@ function setup_disable_features_services {
   CondNewItem $tabletpc | Out-Null
   New-ItemProperty -Path $tabletpc -Name PreventHandwritingDataSharing -Value 0 -Force | Out-Null
 
-  $cloudcontent = "HKLM\SOFTWARE\Policies\Microsoft\Windows\CloudContent"
+  $cloudcontent = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent"
   CondNewItem $cloudcontent | Out-Null
   New-ItemProperty -Path $cloudcontent -Name DisableSoftLanding -Value 1 -Force | Out-Null
 
@@ -762,10 +762,10 @@ function setup_i_conf_third_party(){
 
   # Accept Sysinternals eula
   $paths = @(
-    "HKCU\Software\Sysinternals"
-    "HKCU\Software\System Internals"
-    "HKLM\Software\Sysinternals"
-    "HKLM\Software\System Internals"
+    "HKCU:\Software\Sysinternals"
+    "HKCU:\Software\System Internals"
+    "HKLM:\Software\Sysinternals"
+    "HKLM:\Software\System Internals"
   )
   foreach ($path in $paths) {
     CondNewItem $path | Out-Null
