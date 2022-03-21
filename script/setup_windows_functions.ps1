@@ -252,7 +252,7 @@ function setup_disk {
   # it could break some old apps...
   # https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/fsutil-behavior
   fsutil behavior set disable8dot3 1
-  fsutil behavior set disablelastaccess 1
+  fsutil behavior set disablelastaccess 2
   fsutil 8dot3name strip /s C:\
 
   # fixed 100% disk usage on some machines
